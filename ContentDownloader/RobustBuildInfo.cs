@@ -7,11 +7,12 @@ public class RobustBuildInfo
     public RobustManifestInfo RobustManifestInfo;
     public RobustBuildInfo(RobustUrl url)
     {
+        ConstServices.Logger.Log("Fetching info from " + url);
         Url = url;
         BuildInfo = ConstServices.RestService.GetDataSync<Info>(url.InfoUri);
 
         RobustManifestInfo = BuildInfo.build.acz ? 
-            new RobustManifestInfo(new RobustPath(Url, "manifest.txt"), Url) : 
+            new RobustManifestInfo(new RobustPath(Url, "manifest.txt"), new RobustPath(Url, "download")) : 
             new RobustManifestInfo(new Uri(BuildInfo.build.manifest_url),new Uri(BuildInfo.build.manifest_download_url));
         
     }

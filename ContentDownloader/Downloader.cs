@@ -10,14 +10,14 @@ public class Downloader
     public RobustBuildInfo Info { get; private set; }
     private HttpClient _http = new();
     private const int ManifestDownloadProtocolVersion = 1;
-    private string _path = "./datum/";
+    public readonly string Path = "./datum/";
 
     public ManifestReader ManifestReader => new ManifestReader(Info.RobustManifestInfo);
 
     public Downloader(RobustBuildInfo info)
     {
         Info = info;
-        if (!Directory.Exists(_path)) Directory.CreateDirectory(_path);
+        if (!Directory.Exists(Path)) Directory.CreateDirectory(Path);
     }
     
     private static void EnsureBuffer(ref byte[] buf, int needsFit)
@@ -32,11 +32,12 @@ public class Downloader
 
     public bool CheckManifestExist(RobustManifestItem item)
     {
-        return File.Exists(_path + item.Hash);
+        return File.Exists(Path + item.Hash);
     }
 
     public async Task<List<RobustManifestItem>> EnsureItems()
     {
+        ConstServices.Logger.Log("Fetching manifest from: " + Info.RobustManifestInfo.ManifestUri);
         using var manifestReader = ManifestReader;
 
         List<RobustManifestItem> allItems = [];
@@ -49,7 +50,7 @@ public class Downloader
             allItems.Add(item.Value);
         }
         
-        Console.WriteLine("Download Count:{0}",items.Count);
+        ConstServices.Logger.Log("Download Count:",items.Count);
 
         await Download(items);
         
@@ -58,20 +59,27 @@ public class Downloader
 
     public async Task Unpack(string path)
     {
+        ConstServices.Logger.Log("Unpack manifest files to:" + path);
         var items = await EnsureItems();
         foreach (var item in items)
         {
             FileInfo fileInfo = new FileInfo(path + item.Path);
             if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
             
-            File.Copy(_path + item.Hash, path + item.Path,true);
+            File.Copy(Path + item.Hash, path + item.Path,true);
         }
     }
 
     
     public async Task Download(List<RobustManifestItem> toDownload)
     {
-        if(toDownload.Count == 0) return;
+        if(toDownload.Count == 0)
+        {
+            ConstServices.Logger.Log("Nothing to download! Fuck this!");
+            return;
+        }
+        
+        ConstServices.Logger.Log("Downloading from: " + Info.RobustManifestInfo.DownloadUri);
         
         var requestBody = new byte[toDownload.Count * 4];
         var reqI = 0;
@@ -192,9 +200,9 @@ public class Downloader
                     }
                 }
                 
-                await File.WriteAllBytesAsync(_path + item.Hash,data.ToArray());
+                await File.WriteAllBytesAsync(Path + item.Hash,data.ToArray());
                 
-                Console.WriteLine("path: {0}, hash: {1}", item.Path, item.Hash);
+                ConstServices.Logger.Log("file saved:", item.Path);
                 i += 1;
             }
         }

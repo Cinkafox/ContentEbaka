@@ -28,7 +28,7 @@ public class EngineShit
             throw new Exception("No engine version available for our platform!");
         }
 
-        Console.WriteLine("Selecting RID {0}", bestRid);
+        ConstServices.Logger.Log("Selecting RID", bestRid);
         
         return foundVersion.Platforms[bestRid];
     }
@@ -41,13 +41,12 @@ public class EngineShit
 
     public async Task<AssemblyHelper?>  EnsureEngine(string version)
     {
+        ConstServices.Logger.Log("Ensure engine " + version);
         if(!TryGetVersionInfo(version,out var info))
             return null;
         
-        Console.WriteLine("Ensure shit");
         if (!TryGetEngine(version))
         {
-            Console.WriteLine("Download some shit");
             await DownloadEngine(version);
         }
 
@@ -59,7 +58,7 @@ public class EngineShit
         if(!TryGetVersionInfo(version,out var info))
             return;
         
-        Console.WriteLine("MEOW");
+        ConstServices.Logger.Log("Downloading engine version " + version);
         using var client = new HttpClient();
         await using var s = await client.GetStreamAsync(info.Url);
         await using var fs = new FileStream(EnginePath + version, FileMode.OpenOrCreate);

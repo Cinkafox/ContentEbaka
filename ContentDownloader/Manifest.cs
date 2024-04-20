@@ -91,7 +91,7 @@ public class ManifestReader : StreamReader
         var line = ReadLine();
         if (line == null) return null;
         var splited = line.Split(" ");
-        return new RobustManifestItem(splited[0], splited[1], CurrentId++);
+        return new RobustManifestItem(splited[0], line.Substring(splited[0].Length + 1), CurrentId++);
     }
 
     public bool TryReadItem([NotNullWhen(true)] out RobustManifestItem? item)

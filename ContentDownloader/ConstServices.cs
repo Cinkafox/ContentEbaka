@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 
 namespace ContentDownloader;
@@ -7,6 +8,29 @@ public static class ConstServices
 {
     public static RestService RestService = new();
     public static EngineShit EngineShit = new();
+    public static ILogger Logger = new Logger();
+}
+
+public interface ILogger
+{
+    public void Log(params object[] objects);
+}
+
+public class Logger : ILogger
+{
+    public void Log(params object[] objects)
+    {
+        var str = new StringBuilder();
+        foreach (var obj in objects)
+        {
+            str.Append(" " + obj);
+        }
+
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.Write("[LOG]");
+        Console.ResetColor();
+        Console.WriteLine(str);
+    }
 }
 
 
