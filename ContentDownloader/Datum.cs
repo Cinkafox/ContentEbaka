@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ContentDownloader;
 
 public class Auth
@@ -57,4 +59,22 @@ public enum ContentCompressionScheme
     /// ZStandard compression. In the future may use SS14 specific dictionary IDs in the frame header.
     /// </summary>
     ZStd = 2,
+}
+
+public sealed record VersionInfo(
+    bool Insecure,
+    [property: JsonPropertyName("redirect")]
+    string? RedirectVersion,
+    Dictionary<string, BuildInfo> Platforms);
+
+public sealed class BuildInfo
+{
+    [JsonInclude] [JsonPropertyName("url")]
+    public string Url = default!;
+
+    [JsonInclude] [JsonPropertyName("sha256")]
+    public string Sha256 = default!;
+
+    [JsonInclude] [JsonPropertyName("sig")]
+    public string Signature = default!;
 }

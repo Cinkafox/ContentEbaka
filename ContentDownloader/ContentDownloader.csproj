@@ -12,4 +12,8 @@
       <PackageReference Include="SharpZstd.Interop" Version="1.5.5-beta1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Robust.LoaderApi\Robust.LoaderApi\Robust.LoaderApi.csproj" />
+    </ItemGroup>
+
 </Project>

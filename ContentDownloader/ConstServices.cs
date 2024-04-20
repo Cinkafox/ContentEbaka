@@ -6,6 +6,7 @@ namespace ContentDownloader;
 public static class ConstServices
 {
     public static RestService RestService = new();
+    public static EngineShit EngineShit = new();
 }
 
 
