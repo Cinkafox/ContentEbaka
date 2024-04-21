@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 public class Auth
 {

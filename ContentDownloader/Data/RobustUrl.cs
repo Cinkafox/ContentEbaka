@@ -1,4 +1,4 @@
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 public class RobustUrl
 {

@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using Robust.LoaderApi;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 internal sealed class ZipFileApi : IFileApi
 {

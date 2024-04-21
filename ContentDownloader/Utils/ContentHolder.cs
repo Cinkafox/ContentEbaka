@@ -1,6 +1,8 @@
-﻿using Robust.LoaderApi;
+﻿using ContentDownloader.Data;
+using ContentDownloader.Services;
+using Robust.LoaderApi;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public class ContentHolder
 {
@@ -18,6 +20,8 @@ public class ContentHolder
         }
     }
 
+    public AssemblyHelper AssemblyHelper;
+
     public bool IsEnsured => _hashApi != null;
 
     public ContentHolder(RobustBuildInfo info)
@@ -30,6 +34,7 @@ public class ContentHolder
     {
         ConstServices.Logger.Log("Ensure items for content");
         _hashApi = new HashApi(await ContentDownloader.EnsureItems(),ContentDownloader.Path);
+        AssemblyHelper = new AssemblyHelper(_hashApi);
     }
 }
 
@@ -58,7 +63,7 @@ public class ContentRunner
         var contentApi = ContentHolder.FileApi;
         IEnumerable<ApiMount> extraMounts = new[] { new ApiMount(contentApi, "/") };
         
-        var aargs = new MainArgs([], Engine.FileApi, new FuckRedialApi(), extraMounts);
+        var args = new MainArgs([], Engine.FileApi, new FuckRedialApi(), extraMounts);
         
         if (!Engine.TryOpenAssembly(AssemblyHelper.RobustAssemblyName, out var clientAssembly))
         {
@@ -69,7 +74,7 @@ public class ContentRunner
         if (!AssemblyHelper.TryGetLoader(clientAssembly, out var loader))
             return;
         
-        loader.Main(aargs);
+        await Task.Run(() => loader.Main(args));
     }
 }
 
@@ -79,4 +84,10 @@ public class FuckRedialApi : IRedialApi
     {
         
     }
+}
+
+public interface IPostInjectInit
+{
+  
+    void PostInject();
 }

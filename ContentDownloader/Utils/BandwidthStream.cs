@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public sealed class BandwidthStream : Stream
 {

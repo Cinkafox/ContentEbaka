@@ -1,6 +1,6 @@
 using Robust.LoaderApi;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 internal sealed class MainArgs : IMainArgs
 {

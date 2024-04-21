@@ -1,14 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
+using ContentDownloader.Services;
 using Robust.LoaderApi;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public class AssemblyHelper
 {
+    public static Dictionary<string, Assembly> Assemblies = new();
+    public static event Action<string,Assembly>? OnAssemblyLoaded;
     public const string RobustAssemblyName = "Robust.Client";
 
     public readonly IFileApi FileApi;
@@ -18,6 +20,15 @@ public class AssemblyHelper
         AssemblyLoadContext.Default.Resolving += LoadContextOnResolving;
         AssemblyLoadContext.Default.ResolvingUnmanagedDll += LoadContextOnResolvingUnmanaged;
         FileApi = fileApi;
+    }
+
+    public static void RegisterInvoker(string assemblyName, Action<Assembly> func)
+    {
+        ConstServices.Logger.Log("Registering",assemblyName);
+        OnAssemblyLoaded += (s, assembly) =>
+        {
+            if (s == assemblyName) func(assembly);
+        };
     }
     
     public IntPtr LoadContextOnResolvingUnmanaged(Assembly assembly, string unmanaged)
@@ -67,6 +78,9 @@ public class AssemblyHelper
         }
 
         assembly = AssemblyLoadContext.Default.LoadFromStream(asm, pdb);
+        ConstServices.Logger.Log("LOADED ASSEMBLY " + name);
+        Assemblies[name] = assembly;
+        OnAssemblyLoaded?.Invoke(name,assembly);
         return true;
     }
 

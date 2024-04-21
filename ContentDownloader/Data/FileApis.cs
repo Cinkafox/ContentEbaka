@@ -1,6 +1,7 @@
-﻿using Robust.LoaderApi;
+﻿using ContentDownloader.Utils;
+using Robust.LoaderApi;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 public class FileApi : IFileApi
 {

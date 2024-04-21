@@ -1,4 +1,7 @@
-namespace ContentDownloader;
+using ContentDownloader.Services;
+using ContentDownloader.Utils;
+
+namespace ContentDownloader.Data;
 
 public class RobustBuildInfo
 {

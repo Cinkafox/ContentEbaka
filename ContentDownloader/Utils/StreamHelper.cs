@@ -1,6 +1,6 @@
 using System.Buffers;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public static class StreamHelper
 {

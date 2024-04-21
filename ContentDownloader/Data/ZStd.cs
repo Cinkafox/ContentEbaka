@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using SharpZstd.Interop;
 using static SharpZstd.Interop.Zstd;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Data;
 
 public static class ZStd
 {

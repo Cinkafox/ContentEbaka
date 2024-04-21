@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using ContentDownloader.Services;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public class ManifestReader : StreamReader
 {

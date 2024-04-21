@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using ContentDownloader.Data;
+using ContentDownloader.Utils;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Services;
 
 public class EngineShit
 {

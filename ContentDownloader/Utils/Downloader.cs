@@ -2,8 +2,10 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Numerics;
+using ContentDownloader.Data;
+using ContentDownloader.Services;
 
-namespace ContentDownloader;
+namespace ContentDownloader.Utils;
 
 public class Downloader
 {
