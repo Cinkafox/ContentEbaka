@@ -12,9 +12,7 @@ public class Downloader
     public RobustBuildInfo Info { get; private set; }
     private HttpClient _http = new();
     private const int ManifestDownloadProtocolVersion = 1;
-    public readonly string Path = "./datum/";
-
-    public ManifestReader ManifestReader => new ManifestReader(Info.RobustManifestInfo);
+    public readonly string Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(),"datum");
 
     public Downloader(RobustBuildInfo info)
     {
@@ -37,16 +35,23 @@ public class Downloader
         return File.Exists(Path + item.Hash);
     }
 
-    public async Task<List<RobustManifestItem>> EnsureItems()
+    public async Task<List<RobustManifestItem>> EnsureItems(CancellationToken cancellationToken)
     {
         ConstServices.Logger.Log("Fetching manifest from: " + Info.RobustManifestInfo.ManifestUri);
-        using var manifestReader = ManifestReader;
+        using var manifestReader = new ManifestReader(Info.RobustManifestInfo);
 
         List<RobustManifestItem> allItems = [];
         List<RobustManifestItem> items = [];
 
         while (manifestReader.TryReadItem(out var item))
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                ConstServices.Logger.Log("ensuring is cancelled!");
+                return [];
+            }
+            
+            
             if (!CheckManifestExist(item.Value))
                 items.Add(item.Value);
             allItems.Add(item.Value);
@@ -54,28 +59,29 @@ public class Downloader
         
         ConstServices.Logger.Log("Download Count:",items.Count);
 
-        await Download(items);
+        await Download(items,cancellationToken);
         
         return allItems;
     }
 
-    public async Task Unpack(string path)
+    public async Task Unpack(string path,CancellationToken cancellationToken)
     {
         ConstServices.Logger.Log("Unpack manifest files to:" + path);
-        var items = await EnsureItems();
+        var items = await EnsureItems(cancellationToken);
         foreach (var item in items)
         {
             FileInfo fileInfo = new FileInfo(path + item.Path);
             if (!fileInfo.Directory.Exists) fileInfo.Directory.Create();
             
+            ConstServices.Logger.Log($"Unpack {item.Hash} to: {path + item.Path}");
             File.Copy(Path + item.Hash, path + item.Path,true);
         }
     }
 
     
-    public async Task Download(List<RobustManifestItem> toDownload)
+    public async Task Download(List<RobustManifestItem> toDownload,CancellationToken cancellationToken)
     {
-        if(toDownload.Count == 0)
+        if(toDownload.Count == 0 || cancellationToken.IsCancellationRequested)
         {
             ConstServices.Logger.Log("Nothing to download! Fuck this!");
             return;
@@ -100,7 +106,14 @@ public class Downloader
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("zstd"));
-        var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,cancellationToken);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            ConstServices.Logger.Log("Downloading is cancelled!");
+            return;
+        }
+        
         response.EnsureSuccessStatusCode();
         
         var stream = await response.Content.ReadAsStreamAsync();
@@ -140,6 +153,13 @@ public class Downloader
             var i = 0;
             foreach (var item in toDownload)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    ConstServices.Logger.Log("Downloading is cancelled!");
+                    decompressContext?.Dispose();
+                    compressContext?.Dispose();
+                    return;
+                }
 
                 // Read file header.
                 await stream.ReadExactAsync(fileHeader, null);

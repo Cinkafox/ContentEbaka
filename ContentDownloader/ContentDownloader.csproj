@@ -9,7 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2024.2.0-eap1" />
       <PackageReference Include="SharpZstd.Interop" Version="1.5.5-beta1" />
+      <PackageReference Include="Terminal.Gui" Version="2.0.0-pre.1322" />
     </ItemGroup>
 
     <ItemGroup>

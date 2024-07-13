@@ -1,0 +1,65 @@
+﻿<Window x:Class="ContentUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ContentUI"
+        mc:Ignorable="d"
+        MinWidth="420"
+        MinHeight="220"
+        Title="MainWindow" Height="450" Width="800"
+        WindowStyle="None">
+    <Grid Background="#332B2B">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="190" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <Border Grid.Column="0" 
+                Grid.ColumnSpan="2" 
+                Grid.Row="0" 
+                Background="#402B2D" 
+                CornerRadius="0,0,8,8">
+          
+        </Border>
+        
+        <Border Grid.Column="0" 
+                Grid.Row="1" 
+                Background="#B11D2F" 
+                CornerRadius="8,8,8,8"
+                Margin="15">
+            
+        </Border>
+        
+        <Border Grid.Column="1" 
+                Grid.Row="1" 
+                Background="#B11D2F" 
+                CornerRadius="8,8,8,8"
+                Margin="15">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Background="Azure" Margin="-5,5,-1,5">
+                    <StackPanel Orientation="Horizontal" Background="Bisque" HorizontalAlignment="Stretch">
+                        <TextBlock TextAlignment="Center" VerticalAlignment="Center"> sa</TextBlock>
+                        <TextBlock TextAlignment="Center" VerticalAlignment="Center"> sa</TextBlock>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Background="Azure" Margin="0,5,-1,5">
+                    <TextBlock TextAlignment="Center" VerticalAlignment="Center"> sa</TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+        
+        <Border Grid.Column="0" 
+                Grid.ColumnSpan="2" 
+                Grid.Row="2" 
+                Background="#402B2D" 
+                CornerRadius="8,8,0,0">
+            
+        </Border>
+    </Grid>
+</Window>

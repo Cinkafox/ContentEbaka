@@ -78,3 +78,29 @@ public sealed class BuildInfo
     [JsonInclude] [JsonPropertyName("sig")]
     public string Signature = default!;
 }
+
+public class ServerInfo
+{
+    public string address { get; set; }
+    public StatusData statusData { get; set; }
+    public List<string> inferredTags { get; set; }
+
+    public override string ToString()
+    {
+        return $"{statusData.name}";
+    }
+}
+
+public class StatusData
+{
+    public string map { get; set; }
+    public string name { get; set; }
+    public List<string> tags { get; set; }
+    public string preset { get; set; }
+    public int players { get; set; }
+    public int round_id { get; set; }
+    public int run_level { get; set; }
+    public bool panic_bunker { get; set; }
+    public DateTime round_start_time { get; set; }
+    public int soft_max_players { get; set; }
+}

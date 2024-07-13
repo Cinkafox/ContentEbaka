@@ -30,10 +30,10 @@ public class ContentHolder
         ContentDownloader = new Downloader(Info);
     }
 
-    public async Task EnsureItems()
+    public async Task EnsureItems(CancellationToken cancellationToken)
     {
         ConstServices.Logger.Log("Ensure items for content");
-        _hashApi = new HashApi(await ContentDownloader.EnsureItems(),ContentDownloader.Path);
+        _hashApi = new HashApi(await ContentDownloader.EnsureItems(cancellationToken),ContentDownloader.Path);
         AssemblyHelper = new AssemblyHelper(_hashApi);
     }
 }
@@ -53,16 +53,16 @@ public class ContentRunner
         Engine = await ConstServices.EngineShit.EnsureEngine(ContentHolder.Info.BuildInfo.build.engine_version);
     }
 
-    public async Task Run()
+    public async Task Run(IEnumerable<ApiMount> extraMounts,CancellationToken cancellationToken)
     {
-
         ConstServices.Logger.Log("Start Content!");
-        if (Engine == null) await EnsureEngine();
-        if (!ContentHolder.IsEnsured) await ContentHolder.EnsureItems();
-        
-        var contentApi = ContentHolder.FileApi;
-        IEnumerable<ApiMount> extraMounts = new[] { new ApiMount(contentApi, "/") };
-        
+        if (Engine == null)
+        {
+            await EnsureEngine();
+            if (Engine == null) throw new Exception("Engine is not ensured");
+        }
+        if (!ContentHolder.IsEnsured) await ContentHolder.EnsureItems(cancellationToken);
+
         var args = new MainArgs([], Engine.FileApi, new FuckRedialApi(), extraMounts);
         
         if (!Engine.TryOpenAssembly(AssemblyHelper.RobustAssemblyName, out var clientAssembly))
@@ -74,7 +74,7 @@ public class ContentRunner
         if (!AssemblyHelper.TryGetLoader(clientAssembly, out var loader))
             return;
         
-        await Task.Run(() => loader.Main(args));
+        await Task.Run(() => loader.Main(args), cancellationToken);
     }
 }
 

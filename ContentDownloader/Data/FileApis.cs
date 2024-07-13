@@ -3,17 +3,54 @@ using Robust.LoaderApi;
 
 namespace ContentDownloader.Data;
 
+public class FunnyApi : IFileApi
+{
+    public IReadOnlyList<IFileApi> Apis;
+    public List<string> Files;
+
+
+    public FunnyApi(params IFileApi[] apis)
+    {
+        Apis = apis;
+        Files = new List<string>();
+        foreach (var api in apis)
+        {
+            foreach (var file in api.AllFiles)
+            {
+                if(!Files.Contains(file))
+                    Files.Add(file);
+            }
+        }
+    }
+
+    public bool TryOpen(string path, out Stream? stream)
+    {
+        foreach (var api in Apis)
+        {
+            if (api.TryOpen(path, out stream)) return true;
+        }
+
+        stream = null;
+        return false;
+    }
+
+    public IEnumerable<string> AllFiles => Files;
+}
+
 public class FileApi : IFileApi
 {
     public string RootPath;
-    public FileApi(string rootPath)
+    public string MountPath;
+    
+    public FileApi(string rootPath, string mountPath)
     {
         RootPath = rootPath;
+        MountPath = mountPath;
     }
     
     public bool TryOpen(string path, out Stream? stream)
     {
-        if (File.Exists(RootPath + path))
+        if (File.Exists(RootPath + MountPath + path))
         {
             stream = File.Open(RootPath + path,FileMode.Open);
             return true;
@@ -27,7 +64,7 @@ public class FileApi : IFileApi
     {
         get
         {
-            return Directory.EnumerateFiles(RootPath, "*.*", SearchOption.AllDirectories);
+            return Directory.EnumerateFiles(RootPath, "*.*", SearchOption.AllDirectories).Select(s => s.Replace(RootPath,MountPath));
         }
     }
 }

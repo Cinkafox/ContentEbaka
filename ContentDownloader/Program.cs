@@ -1,51 +1,50 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
 using ContentDownloader.Data;
 using ContentDownloader.Services;
+using ContentDownloader.Ui;
 using ContentDownloader.Utils;
+
+using Terminal.Gui;
 
 namespace ContentDownloader;
 
 public static class Programm
 {
-    public static async Task Main(string[] args)
+    public static RobustUrl? Url;
+    public static void Main(string[] args)
     {
-        ConstServices.Logger.Log("Starting some shit");
-        var a = new RobustBuildInfo((RobustUrl)"ss14://server.fishstation.ru");
-        var cr = new ContentRunner(a);
-        AssemblyHelper.RegisterInvoker("Robust.Client", assembly =>
-        {
-            ConstServices.Logger.Log("MEOW!");
-            var sa = assembly.GetType("Robust.Client.Graphics.Clyde.Clyde");
-            ConstServices.Logger.Log(sa.Name);
-        });
-        await cr.Run();
+        Run();
     }
-}
 
-
-
-
-public static class ConHelper{
-
-    public static Assembly? FindAssembly(string type)
+    public static void Run()
     {
-        var splited = type.Split(".");
-        var outp = "";
-        foreach (var item in splited)
+        do
         {
-            outp += item;
-            if (AssemblyHelper.Assemblies.TryGetValue(outp, out var assembly))
-                return assembly;
-            outp += ".";
+            Url = null;
+            var window = new ServerListWindow();
+            Application.QuitKey = Key.C.WithCtrl;
+            Task.Run(window.LoadData);
+            Application.Run(window);
+            Application.Shutdown();
+        
+            if(Url is null) continue;
+            
+            ConstServices.Logger.Log("DOWNLOAD " + Url);
+            var task = Task.Run(Download);
+            task.Wait();
+        } while (Url is not null);
+    }
+    
+    public static async Task Download()
+    {
+        using (var cancelTokenSource = new CancellationTokenSource())
+        {
+            var rbi = new RobustBuildInfo(Url!);
+            var contentHolder = new ContentHolder(rbi);
+            await contentHolder.EnsureItems(cancelTokenSource.Token);
+            var path = Path.GetTempPath() + rbi.Url.Uri.Host + "\\";
+            await contentHolder.ContentDownloader.Unpack(path, cancelTokenSource.Token);
+            Process.Start(new ProcessStartInfo("explorer.exe", path));
         }
-
-        return null;
-    }
-    public static Type GetType(string type)
-    {
-        var splited = type.Split(".");
-        var assemblyName = $"{splited[0]}.{splited[1]}";
-        var assembly = AssemblyHelper.Assemblies[assemblyName];
-        return assembly.GetType(type);
     }
 }

@@ -1,29 +1,21 @@
+using ContentDownloader.Utils;
+
 namespace ContentDownloader.Data;
 
 public class RobustUrl
 {
-    public bool Secured { get; private set; }
-    public string Scheme { get; private set; } = "http";
     public Uri Uri { get; private set; }
     public Uri HttpUri { get; private set; }
     public RobustPath InfoUri => new(this, "info");
     public RobustPath StatusUri => new(this, "status");
     public RobustUrl(string url)
     {
-        Uri = new Uri(url);
-        
-        if (Uri.Scheme != "ss14" && Uri.Scheme != "ss14s") 
-            throw new Exception("ss14 or ss14s only scheme");
+        if (!UriHelper.TryParseSs14Uri(url, out var uri))
+            throw new Exception("Invalid scheme");
 
-        if (Uri.Scheme == "ss14s")
-        {
-            Secured = true;
-            Scheme = "https";
-        }
+        Uri = uri;
 
-        HttpUri = Uri.Port != -1 ? 
-            new Uri($"{Scheme}://{Uri.Host}:{Uri.Port}{Uri.PathAndQuery}") : 
-            new Uri($"{Scheme}://{Uri.Host}{Uri.PathAndQuery}");
+        HttpUri = UriHelper.GetServerApiAddress(Uri);
     }
 
     public override string ToString()
