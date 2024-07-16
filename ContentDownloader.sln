@@ -1,12 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentDownloader", "ContentDownloader\ContentDownloader.csproj", "{F3F8B23A-F615-4005-8298-3A5BA68F1883}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Robust.LoaderApi", "Robust.LoaderApi\Robust.LoaderApi\Robust.LoaderApi.csproj", "{A0DADA4E-EE96-4A48-9A97-1BD9735B7294}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InjecMod", "InjecMod\InjecMod.csproj", "{75FC965F-5BF4-430F-B547-7A1FD514E313}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.Datum", "Content.Datum\Content.Datum.csproj", "{D1937A6F-288B-4A0C-9E2B-1C9579F781BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentUI", "ContentUI\ContentUI.csproj", "{F9351CD0-BFBD-4A10-87A5-6358C9CB628A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.Downloader", "Content.Downloader\Content.Downloader.csproj", "{A3B7AA28-FA6C-4770-B45F-5383A4F75959}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,21 +12,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F3F8B23A-F615-4005-8298-3A5BA68F1883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F3F8B23A-F615-4005-8298-3A5BA68F1883}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F3F8B23A-F615-4005-8298-3A5BA68F1883}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F3F8B23A-F615-4005-8298-3A5BA68F1883}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A0DADA4E-EE96-4A48-9A97-1BD9735B7294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0DADA4E-EE96-4A48-9A97-1BD9735B7294}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0DADA4E-EE96-4A48-9A97-1BD9735B7294}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0DADA4E-EE96-4A48-9A97-1BD9735B7294}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75FC965F-5BF4-430F-B547-7A1FD514E313}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75FC965F-5BF4-430F-B547-7A1FD514E313}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75FC965F-5BF4-430F-B547-7A1FD514E313}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75FC965F-5BF4-430F-B547-7A1FD514E313}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F9351CD0-BFBD-4A10-87A5-6358C9CB628A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F9351CD0-BFBD-4A10-87A5-6358C9CB628A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F9351CD0-BFBD-4A10-87A5-6358C9CB628A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F9351CD0-BFBD-4A10-87A5-6358C9CB628A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1937A6F-288B-4A0C-9E2B-1C9579F781BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1937A6F-288B-4A0C-9E2B-1C9579F781BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1937A6F-288B-4A0C-9E2B-1C9579F781BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1937A6F-288B-4A0C-9E2B-1C9579F781BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3B7AA28-FA6C-4770-B45F-5383A4F75959}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B7AA28-FA6C-4770-B45F-5383A4F75959}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3B7AA28-FA6C-4770-B45F-5383A4F75959}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3B7AA28-FA6C-4770-B45F-5383A4F75959}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
