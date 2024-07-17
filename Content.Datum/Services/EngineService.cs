@@ -14,19 +14,17 @@ public class EngineService
     private readonly DebugService _debugService;
     private readonly VarService _varService;
     private readonly FileService _fileService;
-    
-    public readonly IReadWriteFileApi EngineFileApi;
+    private readonly IServiceProvider _serviceProvider;
 
     public Dictionary<string, VersionInfo> VersionInfos;
 
-    public EngineService(RestService restService, DebugService debugService, VarService varService,FileService fileService)
+    public EngineService(RestService restService, DebugService debugService, VarService varService,FileService fileService, IServiceProvider serviceProvider)
     {
         _restService = restService;
         _debugService = debugService;
         _varService = varService;
         _fileService = fileService;
-        
-        EngineFileApi = fileService.CreateAndMount("engine/");
+        _serviceProvider = serviceProvider;
 
         var loadTask = Task.Run(() => LoadEngineManifest(CancellationToken.None));
         loadTask.Wait();
@@ -65,7 +63,7 @@ public class EngineService
         return info != null;
     }
 
-    public async Task<IFileApi> EnsureEngine(string version)
+    public async Task<AssemblyApi?> EnsureEngine(string version)
     {
         _debugService.Log("Ensure engine " + version);
         if(!TryGetVersionInfo(version,out var info))
@@ -76,7 +74,7 @@ public class EngineService
             await DownloadEngine(version);
         }
         
-        return _fileService.OpenZip(_varService.EnginePath + version);
+        return new AssemblyApi(_fileService.OpenZip(version, _fileService.EngineFileApi),_serviceProvider);
     }
 
     public async Task DownloadEngine(string version)
@@ -87,12 +85,12 @@ public class EngineService
         _debugService.Log("Downloading engine version " + version);
         using var client = new HttpClient();
         await using var s = await client.GetStreamAsync(info.Url);
-        EngineFileApi.Save(version, s);
+        _fileService.EngineFileApi.Save(version, s);
     }
 
     public bool TryGetEngine(string version,[NotNullWhen(true)] out Stream? stream)
     {
-        return EngineFileApi.TryOpen(version, out stream);
+        return _fileService.EngineFileApi.TryOpen(version, out stream);
     }
 
     public bool TryGetEngine(string version)

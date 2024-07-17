@@ -10,33 +10,38 @@ namespace Content.Datum.Services;
 public class FileService
 {
     private readonly DebugService _debugService;
+    private HashApi? _hashApi;
     
-    public readonly MountApi FileApi = new MountApi();
-    public IFileApi ReadOnlyFileApi => FileApi;
-    public IWriteFileApi WriteOnlyFileApi => FileApi;
+    public readonly IReadWriteFileApi EngineFileApi;
+    public readonly IReadWriteFileApi ContentFileApi;
+
+    public List<RobustManifestItem> ManifestItems
+    {
+        set => _hashApi = new HashApi(value, ContentFileApi);
+    }
+
+    public HashApi HashApi
+    {
+        get
+        {
+            if (_hashApi is null) throw new Exception("Hash API is not initialized!");
+            return _hashApi;
+        }
+        set => _hashApi = value;
+    }
 
     public string RootPath = "./datum/";
 
     public FileService(DebugService debugService)
     {
         _debugService = debugService;
+        ContentFileApi = new FileApi(Path.Join(RootPath, "content/"));
+        EngineFileApi = new FileApi(Path.Join(RootPath, "engine/"));
     }
 
-    public void Mount(string path,IReadWriteFileApi fileApi)
+    public ZipFileApi OpenZip(string path, IFileApi fileApi)
     {
-        FileApi.Mount(path, fileApi);
-    }
-
-    public IReadWriteFileApi CreateAndMount(string path)
-    {
-        var fileApi = new FileApi(Path.Join(RootPath, path));
-        Mount(path,fileApi);
-        return fileApi;
-    }
-    
-    public ZipFileApi OpenZip(string path)
-    {
-        if (!FileApi.TryOpen(path, out var zipStream))
+        if (!fileApi.TryOpen(path, out var zipStream))
             return null;
         
         var zipArchive = new ZipArchive(zipStream, ZipArchiveMode.Read);
@@ -47,10 +52,5 @@ public class FileService
             prefix = "Space Station 14.app/Contents/Resources/";
         }
         return new ZipFileApi(zipArchive, prefix);
-    }
-
-    public HashApi GetHashApi(List<RobustManifestItem> items, IFileApi fileApi)
-    {
-        return new HashApi(items, fileApi);
     }
 }

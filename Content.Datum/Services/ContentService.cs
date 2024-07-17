@@ -19,22 +19,16 @@ public partial class ContentService
     private readonly VarService _varService;
     private readonly FileService _fileService;
     private readonly EngineService _engineService;
-    private readonly AssemblyService _assemblyService;
     private readonly HttpClient _http = new HttpClient();
-    
-    public readonly IReadWriteFileApi ContentFileApi;
 
     public ContentService(RestService restService, DebugService debugService, VarService varService, 
-        FileService fileService, EngineService engineService, AssemblyService assemblyService)
+        FileService fileService, EngineService engineService)
     {
         _restService = restService;
         _debugService = debugService;
         _varService = varService;
         _fileService = fileService;
         _engineService = engineService;
-        _assemblyService = assemblyService;
-        
-        ContentFileApi = fileService.CreateAndMount("content/");
     }
 
     public async Task<RobustBuildInfo> GetBuildInfo(RobustUrl url,CancellationToken cancellationToken)

@@ -2,39 +2,33 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using Content.Datum.Data.FileApis;
-using Content.Datum.Data.FileApis.Interfaces;
-using Content.Datum.Utils;
+using Content.Datum.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Robust.LoaderApi;
 
-namespace Content.Datum.Services;
+namespace Content.Datum.Data.FileApis;
 
-public class AssemblyService
+public class AssemblyApi : IFileApi
 {
-    private readonly IReadWriteFileApi _fileApi;
+    private readonly IFileApi _root;
     private readonly DebugService _debugService;
 
-    public readonly Dictionary<string, Assembly> Assemblies = new();
-
-    public AssemblyService(FileService fileApiService, DebugService debugService)
+    public AssemblyApi(IFileApi root, IServiceProvider serviceProvider)
     {
-        _fileApi = fileApiService.FileApi;
-        _debugService = debugService;
+        _root = root;
+        _debugService = serviceProvider.GetService<DebugService>()!;
+        
         AssemblyLoadContext.Default.Resolving += LoadContextOnResolving;
         AssemblyLoadContext.Default.ResolvingUnmanagedDll += LoadContextOnResolvingUnmanaged;
     }
-
-    private IntPtr LoadContextOnResolvingUnmanaged(Assembly assembly, string unmanaged)
-    {
-        var ourDir = Path.GetDirectoryName(typeof(AssemblyService).Assembly.Location);
-        var a = Path.Combine(ourDir!, unmanaged);
-        if (NativeLibrary.TryLoad(a, out var handle))
-            return handle;
-
-        return IntPtr.Zero;
-    }
     
+    public bool TryOpen(string path, out Stream? stream)
+    {
+        return _root.TryOpen(path, out stream);
+    }
 
+    public IEnumerable<string> AllFiles => _root.AllFiles;
+    
     public bool TryGetLoader(Assembly clientAssembly, [NotNullWhen(true)] out ILoaderEntryPoint? loader)
     {
         loader = null;
@@ -57,11 +51,6 @@ public class AssemblyService
         return true;
     }
 
-    private Assembly? LoadContextOnResolving(AssemblyLoadContext arg1, AssemblyName arg2)
-    {
-        return TryOpenAssembly(arg2.Name!, out var assembly) ? assembly : null;
-    }
-
     public bool TryOpenAssembly(string name, [NotNullWhen(true)] out Assembly? assembly)
     {
         if (!TryOpenAssemblyStream(name, out var asm, out var pdb))
@@ -72,7 +61,8 @@ public class AssemblyService
 
         assembly = AssemblyLoadContext.Default.LoadFromStream(asm, pdb);
         _debugService.Log("LOADED ASSEMBLY " + name);
-        Assemblies[name] = assembly;
+        asm.Dispose();
+        pdb?.Dispose();
         return true;
     }
 
@@ -81,10 +71,29 @@ public class AssemblyService
         asm = null;
         pdb = null;
 
-        if (!_fileApi.TryOpen($"{name}.dll", out asm))
+        if (!_root.TryOpen($"{name}.dll", out asm))
             return false;
 
-        _fileApi.TryOpen($"{name}.pdb", out pdb);
+        _root.TryOpen($"{name}.pdb", out pdb);
         return true;
+    }
+    
+    private IntPtr LoadContextOnResolvingUnmanaged(Assembly assembly, string unmanaged)
+    {
+        var ourDir = Path.GetDirectoryName(typeof(AssemblyApi).Assembly.Location);
+        var a = Path.Combine(ourDir!, unmanaged);
+        
+        _debugService.Debug($"Loading dll lib: {a}");
+        
+        if (NativeLibrary.TryLoad(a, out var handle))
+            return handle;
+
+        return IntPtr.Zero;
+    }
+    
+    private Assembly? LoadContextOnResolving(AssemblyLoadContext arg1, AssemblyName arg2)
+    {
+        _debugService.Debug("Resolving assembly from FileAPI: " + arg2.Name);
+        return TryOpenAssembly(arg2.Name!, out var assembly) ? assembly : null;
     }
 }

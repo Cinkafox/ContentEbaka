@@ -15,7 +15,7 @@ public class FileApi : IReadWriteFileApi
     {
         if (File.Exists(Path.Join(RootPath, path)))
         {
-            stream = File.Open(RootPath + path,FileMode.Open);
+            stream = File.OpenRead(RootPath + path);
             return true;
         }
 
@@ -37,6 +37,12 @@ public class FileApi : IReadWriteFileApi
         input.CopyTo(stream);
         stream.Close();
         return true;
+    }
+
+    public bool Has(string path)
+    {
+        var currPath = Path.Join(RootPath, path);
+        return File.Exists(currPath);
     }
 
     public IEnumerable<string> AllFiles => Directory.EnumerateFiles(RootPath, "*.*", SearchOption.AllDirectories);

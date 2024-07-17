@@ -60,4 +60,17 @@ public class MountApi : IReadWriteFileApi
         return false;
 
     }
+
+    public bool Has(string path)
+    {
+        foreach (var (key,value) in FileApis)
+        {
+            if (key.StartsWith(path) && value is IReadWriteFileApi readWriteFileApi)
+            {
+                return readWriteFileApi.Has(path.Substring(key.Length));
+            }
+        }
+
+        return false;
+    }
 }

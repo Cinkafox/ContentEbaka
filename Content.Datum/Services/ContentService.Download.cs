@@ -15,9 +15,7 @@ public partial class ContentService
 {
     public bool CheckManifestExist(RobustManifestItem item)
     {
-        var resolv = ContentFileApi.TryOpen(item.Hash, out var stream);
-        if(resolv) stream.Close();
-        return resolv;
+        return _fileService.ContentFileApi.Has(item.Hash);
     }
 
     public async Task<List<RobustManifestItem>> EnsureItems(ManifestReader manifestReader,Uri downloadUri,
@@ -42,6 +40,8 @@ public partial class ContentService
         _debugService.Log("Download Count:" + items.Count);
 
         await Download(downloadUri,items,cancellationToken);
+
+        _fileService.ManifestItems = allItems;
         
         return allItems;
     }
@@ -64,11 +64,11 @@ public partial class ContentService
         var items = await EnsureItems(info,cancellationToken);
         foreach (var item in items)
         {
-            if (ContentFileApi.TryOpen(item.Hash, out var stream))
+            if (_fileService.ContentFileApi.TryOpen(item.Hash, out var stream))
             {
                 _debugService.Log($"Unpack {item.Hash} to: {item.Path}");
                 otherApi.Save(item.Path, stream);
-                await stream.DisposeAsync();
+                stream.Close();
             }
             else
             {
@@ -221,8 +221,7 @@ public partial class ContentService
                 }
 
                 using var fileStream = new MemoryStream(data.ToArray());
-                ContentFileApi.Save(item.Hash, fileStream);
-                //await File.WriteAllBytesAsync(Path + item.Hash,data.ToArray());
+                _fileService.ContentFileApi.Save(item.Hash, fileStream);
                 
                 _debugService.Log("file saved:" + item.Path);
                 i += 1;

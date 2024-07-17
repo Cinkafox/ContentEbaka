@@ -25,7 +25,7 @@ public class HashApi : IFileApi
             path = path.Substring(1);
         }
 
-        if (Manifest.TryGetValue(path, out var a) && _fileApi.TryOpen(a.Hash, out stream))
+        if (Manifest.TryGetValue(path, out var a) && _fileApi.TryOpen(a.Hash, out stream)) 
             return true;
         
         stream = null;
