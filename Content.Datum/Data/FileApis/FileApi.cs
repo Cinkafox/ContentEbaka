@@ -15,7 +15,7 @@ public class FileApi : IReadWriteFileApi
     {
         if (File.Exists(Path.Join(RootPath, path)))
         {
-            stream = File.OpenRead(RootPath + path);
+            stream = File.OpenRead(Path.Join(RootPath, path));
             return true;
         }
 

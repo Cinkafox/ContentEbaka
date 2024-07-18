@@ -1,12 +1,11 @@
-﻿using Content.Datum.Utils;
-using ContentDownloader.Data;
+﻿using ContentDownloader.Data;
 using Robust.LoaderApi;
 
 namespace Content.Datum.Services;
 
 public partial class ContentService
 {
-    public async Task Run(RobustBuildInfo buildInfo,CancellationToken cancellationToken)
+    public async Task Run(string[] runArgs,RobustBuildInfo buildInfo,CancellationToken cancellationToken)
     {
         _debugService.Log("Start Content!");
 
@@ -14,7 +13,7 @@ public partial class ContentService
 
         if (engine is null)
         {
-            throw new Exception("Engine version is not fuckable: " + buildInfo.BuildInfo.build.engine_version);
+            throw new Exception("Engine version is not usable: " + buildInfo.BuildInfo.build.engine_version);
         }
 
         await EnsureItems(buildInfo.RobustManifestInfo, cancellationToken);
@@ -24,7 +23,7 @@ public partial class ContentService
             new ApiMount(_fileService.HashApi, "/")
         };
 
-        var args = new MainArgs([], engine, new FuckRedialApi(), extraMounts);
+        var args = new MainArgs(runArgs, engine, new FuckRedialApi(), extraMounts);
         
         if (!engine.TryOpenAssembly(_varService.RobustAssemblyName, out var clientAssembly))
         {

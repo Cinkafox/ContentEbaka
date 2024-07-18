@@ -3,10 +3,8 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Numerics;
 using Content.Datum.Data;
-using Content.Datum.Data.FileApis;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Utils;
-using ContentDownloader.Data;
 using ContentDownloader.Utils;
 
 namespace Content.Datum.Services;
@@ -48,13 +46,24 @@ public partial class ContentService
 
     public async Task<List<RobustManifestItem>> EnsureItems(RobustManifestInfo info,CancellationToken cancellationToken)
     {
+        
+        _debugService.Log("Getting manifest: " + info.Hash);
+
+        if (_fileService.ManifestFileApi.TryOpen(info.Hash, out var stream))
+        {
+            _debugService.Log("Loading manifest from: " + info.Hash);
+            return await EnsureItems(new ManifestReader(stream), info.DownloadUri, cancellationToken);
+        }
+        
         _debugService.Log("Fetching manifest from: " + info.ManifestUri);
 
         var response = await _http.GetAsync(info.ManifestUri,cancellationToken);
         if (!response.IsSuccessStatusCode) throw new Exception();
-        
-        using var manifestReader = new ManifestReader(await response.Content.ReadAsStreamAsync(cancellationToken));
 
+        await using var streamContent = await response.Content.ReadAsStreamAsync(cancellationToken);
+        _fileService.ManifestFileApi.Save(info.Hash, streamContent);
+        streamContent.Seek(0, SeekOrigin.Begin);
+        using var manifestReader = new ManifestReader(streamContent);
         return await EnsureItems(manifestReader, info.DownloadUri, cancellationToken);
     }
 

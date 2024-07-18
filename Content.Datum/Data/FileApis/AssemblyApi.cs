@@ -13,6 +13,8 @@ public class AssemblyApi : IFileApi
     private readonly IFileApi _root;
     private readonly DebugService _debugService;
 
+    private static Dictionary<string, Assembly> AssemblyCache = new();
+
     public AssemblyApi(IFileApi root, IServiceProvider serviceProvider)
     {
         _root = root;
@@ -53,6 +55,11 @@ public class AssemblyApi : IFileApi
 
     public bool TryOpenAssembly(string name, [NotNullWhen(true)] out Assembly? assembly)
     {
+        if (AssemblyCache.TryGetValue(name, out assembly))
+        {
+            return true;
+        }
+        
         if (!TryOpenAssemblyStream(name, out var asm, out var pdb))
         {
             assembly = null;
@@ -60,6 +67,7 @@ public class AssemblyApi : IFileApi
         }
 
         assembly = AssemblyLoadContext.Default.LoadFromStream(asm, pdb);
+        AssemblyCache[name] = assembly;
         _debugService.Log("LOADED ASSEMBLY " + name);
         asm.Dispose();
         pdb?.Dispose();

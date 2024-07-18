@@ -39,8 +39,8 @@ public partial class ContentService
         if (bi.Value is null) throw new NoNullAllowedException();
         info.BuildInfo = bi.Value;
         info.RobustManifestInfo = info.BuildInfo.build.acz ? 
-            new RobustManifestInfo(new RobustPath(info.Url, "manifest.txt"), new RobustPath(info.Url, "download")) : 
-            new RobustManifestInfo(new Uri(info.BuildInfo.build.manifest_url),new Uri(info.BuildInfo.build.manifest_download_url));
+            new RobustManifestInfo(new RobustPath(info.Url, "manifest.txt"), new RobustPath(info.Url, "download"),bi.Value.build.manifest_hash) : 
+            new RobustManifestInfo(new Uri(info.BuildInfo.build.manifest_url),new Uri(info.BuildInfo.build.manifest_download_url),bi.Value.build.manifest_hash);
 
         return info;
     }

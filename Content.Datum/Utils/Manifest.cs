@@ -106,5 +106,5 @@ public class ManifestReader : StreamReader
     }
 }
 
-public record struct RobustManifestInfo(Uri ManifestUri, Uri DownloadUri);
+public record struct RobustManifestInfo(Uri ManifestUri, Uri DownloadUri, string Hash);
 public record struct RobustManifestItem(string Hash, string Path, int Id);

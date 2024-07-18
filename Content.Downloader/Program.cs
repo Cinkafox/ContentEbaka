@@ -39,9 +39,9 @@ public static class Program
         
             if(Url is null) continue;
             
-            var task = Task.Run(RunGame);
+            var task = Task.Run(Download);
             task.Wait();
-        } while (Url is not null && false);
+        } while (Url is not null);
     }
     
     public static async Task Download()
@@ -54,16 +54,6 @@ public static class Program
             
             await downloadService.Unpack(buildInfo.RobustManifestInfo, new FileApi(path), cancelTokenSource.Token);
             Process.Start(new ProcessStartInfo("explorer.exe", path));
-        }
-    }
-
-    public static async Task RunGame()
-    {
-        using (var cancelTokenSource = new CancellationTokenSource())
-        {
-            var contentService = ContentApp.ServiceProvider.GetService<ContentService>()!;
-            var buildInfo = await contentService.GetBuildInfo(Url!, cancelTokenSource.Token);
-            await contentService.Run(buildInfo, cancelTokenSource.Token);
         }
     }
 }

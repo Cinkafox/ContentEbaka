@@ -14,6 +14,7 @@ public class FileService
     
     public readonly IReadWriteFileApi EngineFileApi;
     public readonly IReadWriteFileApi ContentFileApi;
+    public readonly IReadWriteFileApi ManifestFileApi;
 
     public List<RobustManifestItem> ManifestItems
     {
@@ -35,8 +36,14 @@ public class FileService
     public FileService(DebugService debugService)
     {
         _debugService = debugService;
-        ContentFileApi = new FileApi(Path.Join(RootPath, "content/"));
-        EngineFileApi = new FileApi(Path.Join(RootPath, "engine/"));
+        ContentFileApi = CreateFileApi("content/");
+        EngineFileApi = CreateFileApi("engine/");
+        ManifestFileApi = CreateFileApi("manifest/");
+    }
+
+    public IReadWriteFileApi CreateFileApi(string path)
+    {
+        return new FileApi(Path.Join(RootPath, path));
     }
 
     public ZipFileApi OpenZip(string path, IFileApi fileApi)
