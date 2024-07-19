@@ -1,10 +1,9 @@
 ﻿using System.Net.Http.Headers;
-using System.Net.Mail;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Services;
 using Content.Runner.Data.Auth;
 
-namespace Content.Runner.Services;
+namespace Content.Runner.Android.Services;
 
 public class AuthService
 {

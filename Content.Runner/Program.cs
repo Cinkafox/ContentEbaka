@@ -57,7 +57,7 @@ public static class Program
             
             var task = Task.Run(RunGame);
             task.Wait();
-        } while (Url is not null);
+        } while (Url is not null && false);
     }
 
     public static async Task RunGame()

@@ -31,7 +31,7 @@ public class FileService
         set => _hashApi = value;
     }
 
-    public string RootPath = "./datum/";
+    public static string RootPath = "./datum/";
 
     public FileService(DebugService debugService)
     {
