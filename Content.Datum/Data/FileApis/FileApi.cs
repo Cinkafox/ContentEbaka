@@ -39,6 +39,13 @@ public class FileApi : IReadWriteFileApi
         return true;
     }
 
+    public bool Remove(string path)
+    {
+        if (!Has(path)) return false;
+        File.Delete(Path.Join(RootPath, path));
+        return true;
+    }
+
     public bool Has(string path)
     {
         var currPath = Path.Join(RootPath, path);

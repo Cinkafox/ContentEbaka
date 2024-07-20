@@ -2,8 +2,13 @@
 
 public class DebugService
 {
-    public ILogger Logger = new Logger();
-    
+    public ILogger Logger;
+
+    public DebugService(ILogger logger)
+    {
+        Logger = logger;
+    }
+
     public void Debug(string message)
     {
         Logger.Log(LoggerCategory.Debug, message);
@@ -23,20 +28,4 @@ public class DebugService
 public enum LoggerCategory
 {
     Log, Debug, Error
-}
-
-public interface ILogger
-{
-    public void Log(LoggerCategory loggerCategory, string message);
-}
-
-public class Logger : ILogger
-{
-    public void Log(LoggerCategory loggerCategory, string message)
-    {
-        Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.Write($"[{Enum.GetName(loggerCategory)}] ");
-        Console.ResetColor();
-        Console.WriteLine(message);
-    }
 }

@@ -4,6 +4,7 @@ using Content.Datum.Data.FileApis;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Utils;
 using ContentDownloader.Data;
+using ContentDownloader.Utils;
 using Robust.LoaderApi;
 
 namespace Content.Datum.Services;
@@ -46,7 +47,7 @@ public class EngineService
         if (foundVersion.RedirectVersion != null) 
             return GetVersionInfo(foundVersion.RedirectVersion);
 
-        var bestRid = "win-x64";//RidUtility.FindBestRid(foundVersion.Platforms.Keys);
+        var bestRid = RidUtility.FindBestRid(foundVersion.Platforms.Keys);
         if (bestRid == null)
         {
             throw new Exception("No engine version available for our platform!");
@@ -73,8 +74,16 @@ public class EngineService
         {
             await DownloadEngine(version);
         }
-        
-        return new AssemblyApi(_fileService.OpenZip(version, _fileService.EngineFileApi),_serviceProvider);
+
+        try
+        {
+            return new AssemblyApi(_fileService.OpenZip(version, _fileService.EngineFileApi),_serviceProvider);
+        }
+        catch (Exception e)
+        {
+            _fileService.EngineFileApi.Remove(version);
+            throw;
+        }
     }
 
     public async Task DownloadEngine(string version)
@@ -84,8 +93,9 @@ public class EngineService
         
         _debugService.Log("Downloading engine version " + version);
         using var client = new HttpClient();
-        await using var s = await client.GetStreamAsync(info.Url);
+        var s = await client.GetStreamAsync(info.Url);
         _fileService.EngineFileApi.Save(version, s);
+        await s.DisposeAsync();
     }
 
     public bool TryGetEngine(string version,[NotNullWhen(true)] out Stream? stream)

@@ -26,17 +26,10 @@ public sealed class ZipFileApi : IFileApi
     {
         _archive = archive;
         _prefix = prefix;
-
-        /*foreach (var entry in _archive.Entries)
-        {
-            Console.WriteLine(entry.FullName);
-        }*/
     }
 
     public bool TryOpen(string path, [NotNullWhen(true)] out Stream? stream)
     {
-        // Console.WriteLine("LOADING: {0}", path);
-
         var entry = _archive.GetEntry(_prefix != null ? _prefix + path : path);
         if (entry == null)
         {

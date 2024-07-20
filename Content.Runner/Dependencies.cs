@@ -1,4 +1,5 @@
-﻿using Content.Runner.Services;
+﻿using Content.Datum.Services;
+using Content.Runner.Services;
 using Content.Runner.UI;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,5 +15,6 @@ public static class Dependencies
     public static void Initialize(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<AuthService>();
+        serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
     }
 }

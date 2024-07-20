@@ -1,6 +1,7 @@
 ﻿
 using System.Diagnostics;
 using Content.Datum;
+using Content.Datum.Data;
 using Content.Datum.Data.FileApis;
 using Content.Datum.Services;
 using Content.Downloader.UI;
@@ -21,6 +22,7 @@ public static class Program
 
         ContentApp = new ContentApp();
         ContentApp.ServiceCollection.AddSingleton<ServerListWindow>();
+        ContentApp.ServiceCollection.AddSingleton<ILogger, ConsoleLogger>();
         ContentApp.Build();
         Run();
     }
