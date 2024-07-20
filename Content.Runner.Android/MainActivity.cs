@@ -8,6 +8,7 @@ using Content.Datum.Services;
 using Content.Runner.Android.Services;
 using ContentDownloader.Data;
 using Java.Lang;
+using Javax.Microedition.Khronos.Egl;
 using Microsoft.Extensions.DependencyInjection;
 using Environment = System.Environment;
 using Exception = System.Exception;
@@ -126,7 +127,8 @@ public class MainActivity : Activity
 
                 // Tell game we are launcher
                 "--cvar", "launch.launcher=true",
-                "--cvar", "display.windowing_api=sdl2"
+                "--cvar", "display.windowing_api=sdl2",
+                "--cvar", "display.egl=true"
             };
             
             var connectionString = url.ToString();
