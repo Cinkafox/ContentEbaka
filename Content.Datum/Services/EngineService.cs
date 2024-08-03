@@ -18,6 +18,7 @@ public class EngineService
     private readonly IServiceProvider _serviceProvider;
 
     public Dictionary<string, VersionInfo> VersionInfos;
+    public Dictionary<string, Module> ModuleInfos;
 
     public EngineService(RestService restService, DebugService debugService, VarService varService,FileService fileService, IServiceProvider serviceProvider)
     {
@@ -35,8 +36,20 @@ public class EngineService
     {
         var info = await _restService.GetAsync<Dictionary<string, VersionInfo>>(
             _varService.EngineManifestUrl,cancellationToken);
+        var moduleInfo = await _restService.GetAsync<ModulesInfo>(
+            _varService.EngineModuleManifestUrl, cancellationToken);
+        
         if(info.Value is null) return;
         VersionInfos = info.Value;
+        
+        if(moduleInfo.Value is null) return;
+        ModuleInfos = moduleInfo.Value.Modules;
+        
+        _debugService.Debug("MAMAM");
+        foreach (var f in ModuleInfos.Keys)
+        {
+            _debugService.Debug(f);
+        }
     }
 
     public BuildInfo? GetVersionInfo(string version)
@@ -67,10 +80,8 @@ public class EngineService
     public async Task<AssemblyApi?> EnsureEngine(string version)
     {
         _debugService.Log("Ensure engine " + version);
-        if(!TryGetVersionInfo(version,out var info))
-            return null;
         
-        if (!TryGetEngine(version))
+        if (!TryOpen(version))
         {
             await DownloadEngine(version);
         }
@@ -98,15 +109,89 @@ public class EngineService
         await s.DisposeAsync();
     }
 
-    public bool TryGetEngine(string version,[NotNullWhen(true)] out Stream? stream)
+    public bool TryOpen(string version,[NotNullWhen(true)] out Stream? stream)
     {
         return _fileService.EngineFileApi.TryOpen(version, out stream);
     }
 
-    public bool TryGetEngine(string version)
+    public bool TryOpen(string version)
     {
-        var a = TryGetEngine(version, out var stream);
+        var a = TryOpen(version, out var stream);
         if(a) stream!.Close();
         return a;
+    }
+
+    public BuildInfo? GetModuleBuildInfo(string moduleName, string version)
+    {
+        if (!ModuleInfos.TryGetValue(moduleName, out var module) || !module.Versions.TryGetValue(version, out var value))
+            return null;
+        
+        var bestRid = RidUtility.FindBestRid(value.Platforms.Keys);
+        if (bestRid == null)
+        {
+            throw new Exception("No engine version available for our platform!");
+        }
+
+        return value.Platforms[bestRid];
+    }
+    
+    public bool TryGetModuleBuildInfo(string moduleName, string version,[NotNullWhen(true)] out BuildInfo? info)
+    {
+        info = GetModuleBuildInfo(moduleName, version);
+        return info != null;
+    }
+
+    public string ResolveModuleVersion(string moduleName, string engineVersion)
+    {
+        var engineVersionObj = Version.Parse(engineVersion);
+        var module = ModuleInfos[moduleName];
+        var selectedVersion = module.Versions.Select(kv => new { Version = Version.Parse(kv.Key), kv.Key, kv.Value })
+            .Where(kv => engineVersionObj >= kv.Version)
+            .MaxBy(kv => kv.Version);
+
+        if (selectedVersion == null) throw new Exception();
+        
+        return selectedVersion.Key;
+    }
+
+    public async Task<AssemblyApi?> EnsureEngineModules(string moduleName, string engineVersion)
+    {
+        var moduleVersion = ResolveModuleVersion(moduleName, engineVersion);
+        if (!TryGetModuleBuildInfo(moduleName, moduleVersion, out var buildInfo))
+            return null;
+
+        var fileName = ConcatName(moduleName, moduleVersion);
+
+        if (!TryOpen(fileName))
+        {
+            await DownloadEngineModule(moduleName, moduleVersion);
+        }
+        
+        try
+        {
+            return new AssemblyApi(_fileService.OpenZip(fileName, _fileService.EngineFileApi),_serviceProvider);
+        }
+        catch (Exception e)
+        {
+            _fileService.EngineFileApi.Remove(fileName);
+            throw;
+        }
+    }
+    
+    public async Task DownloadEngineModule(string moduleName,string moduleVersion)
+    {
+        if (!TryGetModuleBuildInfo(moduleName, moduleVersion, out var info))
+            return;
+        
+        _debugService.Log("Downloading engine module version " + moduleVersion);
+        using var client = new HttpClient();
+        var s = await client.GetStreamAsync(info.Url);
+        _fileService.EngineFileApi.Save(ConcatName(moduleName,moduleVersion), s);
+        await s.DisposeAsync();
+    }
+
+    public string ConcatName(string moduleName, string moduleVersion)
+    {
+        return moduleName + "" + moduleVersion;
     }
 }
