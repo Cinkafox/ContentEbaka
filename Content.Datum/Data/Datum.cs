@@ -104,3 +104,7 @@ public class StatusData
     public DateTime round_start_time { get; set; }
     public int soft_max_players { get; set; }
 }
+
+public sealed record ModulesInfo(Dictionary<string, Module> Modules);
+public sealed record Module(Dictionary<string, ModuleVersionInfo> Versions);
+public sealed record ModuleVersionInfo(Dictionary<string, BuildInfo> Platforms);

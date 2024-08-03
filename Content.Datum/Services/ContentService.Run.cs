@@ -23,6 +23,10 @@ public partial class ContentService
             new ApiMount(_fileService.HashApi, "/")
         };
 
+        var module = await _engineService.EnsureEngineModules("Robust.Client.WebView", buildInfo.BuildInfo.build.engine_version);
+        if(module is not null)
+            extraMounts.Add( new ApiMount(module, "/"));
+        
         var args = new MainArgs(runArgs, engine, new FuckRedialApi(), extraMounts);
         
         if (!_assemblyService.TryOpenAssembly(_varService.RobustAssemblyName, engine, out var clientAssembly))
