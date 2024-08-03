@@ -50,7 +50,8 @@ public class EngineService
         var bestRid = RidUtility.FindBestRid(foundVersion.Platforms.Keys);
         if (bestRid == null)
         {
-            throw new Exception("No engine version available for our platform!");
+            bestRid = "linux-x64";
+            //throw new Exception("No engine version available for our platform!");
         }
 
         _debugService.Log("Selecting RID" + bestRid);

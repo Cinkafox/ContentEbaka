@@ -25,12 +25,12 @@ public partial class ContentService
 
         var args = new MainArgs(runArgs, engine, new FuckRedialApi(), extraMounts);
         
-        if (!engine.TryOpenAssembly(_varService.RobustAssemblyName, out var clientAssembly))
+        if (!_assemblyService.TryOpenAssembly(_varService.RobustAssemblyName, engine, out var clientAssembly))
         {
             throw new Exception("Unable to locate Robust.Client.dll in engine build!");
         }
 
-        if (!engine.TryGetLoader(clientAssembly, out var loader))
+        if (!_assemblyService.TryGetLoader(clientAssembly, out var loader))
             return;
         
         await Task.Run(() => loader.Main(args), cancellationToken);

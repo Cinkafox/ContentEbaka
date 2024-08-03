@@ -1,4 +1,5 @@
-﻿using Content.Datum;
+﻿using System.Runtime.InteropServices;
+using Content.Datum;
 using Content.Datum.Services;
 using Content.Runner.Services;
 using Content.Runner.UI;
@@ -66,6 +67,12 @@ public static class Program
         {
             var contentService = ContentApp.ServiceProvider.GetService<ContentService>()!;
             var authService = ContentApp.ServiceProvider.GetService<AuthService>()!;
+            var debugService = ContentApp.ServiceProvider.GetService<DebugService>()!;
+            
+            debugService.Debug(RuntimeInformation.OSDescription);
+            debugService.Debug(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "Is Linux" : "No Linux");
+            debugService.Debug(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Is Windows" : "No Windows");
+            
             var buildInfo = await contentService.GetBuildInfo(Url!, cancelTokenSource.Token);
 
             if (buildInfo.BuildInfo.auth.mode != "Disabled" && authService.CurrentLogin != null)

@@ -13,5 +13,6 @@ public static class Dependency
         serviceCollection.AddSingleton<FileService>();
         serviceCollection.AddSingleton<RestService>();
         serviceCollection.AddSingleton<VarService>();
+        serviceCollection.AddSingleton<AssemblyService>();
     }
 }

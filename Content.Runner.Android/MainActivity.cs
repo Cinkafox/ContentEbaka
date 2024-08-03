@@ -1,5 +1,5 @@
+using System.Reflection;
 using _Microsoft.Android.Resource.Designer;
-using Android.Media;
 using Android.OS;
 using Android.Views;
 using Content.Datum;
@@ -7,12 +7,11 @@ using Content.Datum.Data;
 using Content.Datum.Services;
 using Content.Runner.Android.Services;
 using ContentDownloader.Data;
-using Java.Lang;
-using Javax.Microedition.Khronos.Egl;
+using HarmonyLib;
 using Microsoft.Extensions.DependencyInjection;
-using Environment = System.Environment;
+using MonoMod;
+using MonoMod.RuntimeDetour;
 using Exception = System.Exception;
-using Thread = Java.Lang.Thread;
 
 namespace Content.Runner.Android;
 
@@ -34,7 +33,7 @@ public class MainActivity : Activity
     protected override async void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
-
+        
         // Set our view from the "main" layout resource
         SetContentView(ResourceConstant.Layout.activity_main);
         
@@ -109,6 +108,7 @@ public class MainActivity : Activity
             var contentService = serviceProvider.GetService<ContentService>()!;
             var authService = serviceProvider.GetService<AuthService>()!;
             var buildInfo = await contentService.GetBuildInfo(url!, cancelTokenSource.Token);
+            var debug = serviceProvider.GetService<DebugService>()!;
 
             if (buildInfo.BuildInfo.auth.mode != "Disabled" && authService.CurrentLogin != null)
             {
@@ -148,12 +148,27 @@ public class MainActivity : Activity
             
             try
             {
+                var harm = new Harmony("ru.cinka");
+                harm.PatchAll();
                 await contentService.Run(args.ToArray(), buildInfo, cancelTokenSource.Token);
             }
             catch (Exception e)
             {
-                serviceProvider.GetService<DebugService>().Error(e.Message + "\r" + e.StackTrace);
+                PrintError(e,debug);
             }
+        }
+    }
+
+    public void PrintError(Exception e, DebugService debug)
+    {
+        debug.Error(e.Message);
+        debug.Error($"Source {e.Source}");
+        debug.Error($"StackTrace {e.StackTrace}");
+        
+        if(e.InnerException is not null)
+        {
+            debug.Error("");
+            PrintError(e.InnerException, debug);
         }
     }
     
