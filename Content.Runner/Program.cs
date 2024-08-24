@@ -17,7 +17,6 @@ public static class Program
     
     public static void Main(string[] args)
     {
-
         ContentApp = new ContentApp();
         Dependencies.Initialize(ContentApp.ServiceCollection);
         Dependencies.InitializeUI(ContentApp.ServiceCollection);
@@ -37,6 +36,7 @@ public static class Program
             Application.QuitKey = Key.C.WithCtrl;
             await w.LoadData();
             var debug = ContentApp.ServiceProvider.GetService<DebugService>()!;
+            debug.Debug($"Current content path: " + FileService.RootPath);
             debug.Debug("Ensuring auth data...");
             if (await ContentApp.ServiceProvider.GetService<AuthService>()!.EnsureToken())
             {
@@ -50,7 +50,6 @@ public static class Program
                 Application.Init();
                 Application.Run(window);
             }
-            
             
             Application.Shutdown();
         

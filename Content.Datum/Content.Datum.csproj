@@ -21,7 +21,7 @@
       <PackageReference Include="MonoMod" Version="22.7.31.1" />
       <PackageReference Include="MonoMod.Core" Version="1.1.2" />
       <PackageReference Include="SharpZstd.Interop" Version="1.5.5-beta1" />
-      <PackageReference Include="Robust.Natives" />
+      <PackageReference Include="Robust.Natives" Version="0.1.1" />
     </ItemGroup>
 
 </Project>

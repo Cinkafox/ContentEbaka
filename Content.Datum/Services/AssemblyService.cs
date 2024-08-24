@@ -8,20 +8,21 @@ using Robust.LoaderApi;
 
 namespace Content.Datum.Services;
 
-public class AssemblyService
+public class  AssemblyService
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly DebugService _debugService;
 
-    public AssemblyService(IServiceProvider serviceProvider, DebugService debugService)
+    private readonly List<Assembly> _assemblies = new();
+    public IReadOnlyList<Assembly> Assemblies => _assemblies;
+
+    public AssemblyService(DebugService debugService)
     {
-        _serviceProvider = serviceProvider;
         _debugService = debugService;
     }
     
     public AssemblyApi Mount(IFileApi fileApi)
     {
-        var asmApi = new AssemblyApi(fileApi, _serviceProvider);
+        var asmApi = new AssemblyApi(fileApi);
         AssemblyLoadContext.Default.Resolving += ((context, name) => OnAssemblyResolving(context,name,asmApi));
         AssemblyLoadContext.Default.ResolvingUnmanagedDll += LoadContextOnResolvingUnmanaged;
         
@@ -60,6 +61,13 @@ public class AssemblyService
 
         assembly = AssemblyLoadContext.Default.LoadFromStream(asm, pdb);
         _debugService.Log("LOADED ASSEMBLY " + name);
+        
+        
+        if(!_assemblies.Contains(assembly))
+        {
+            _assemblies.Add(assembly);
+        }
+        
         asm.Dispose();
         pdb?.Dispose();
         return true;

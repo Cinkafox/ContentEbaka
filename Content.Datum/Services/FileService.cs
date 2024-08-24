@@ -31,7 +31,8 @@ public class FileService
         set => _hashApi = value;
     }
 
-    public static string RootPath = "./datum/";
+    public static string RootPath = Path.Join(Environment.GetFolderPath(
+        Environment.SpecialFolder.ApplicationData),"./Datum/");
 
     public FileService(DebugService debugService)
     {

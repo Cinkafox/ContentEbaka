@@ -11,15 +11,10 @@ namespace Content.Datum.Data.FileApis;
 public class AssemblyApi : IFileApi
 {
     private readonly IFileApi _root;
-    private readonly DebugService _debugService;
 
-    private static Dictionary<string, Assembly> AssemblyCache = new();
-
-    public AssemblyApi(IFileApi root, IServiceProvider serviceProvider)
+    public AssemblyApi(IFileApi root)
     {
         _root = root;
-        _debugService = serviceProvider.GetService<DebugService>()!;
-        
     }
     
     public bool TryOpen(string path, out Stream? stream)

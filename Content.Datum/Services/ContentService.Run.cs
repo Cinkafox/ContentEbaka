@@ -1,10 +1,15 @@
-﻿using ContentDownloader.Data;
+﻿using System.Reflection;
+using ContentDownloader.Data;
+using HarmonyLib;
+using Microsoft.Extensions.DependencyInjection;
 using Robust.LoaderApi;
 
 namespace Content.Datum.Services;
 
 public partial class ContentService
 {
+    public event Action<ContentRunEvent>? OnContentRun;
+    
     public async Task Run(string[] runArgs,RobustBuildInfo buildInfo,CancellationToken cancellationToken)
     {
         _debugService.Log("Start Content!");
@@ -37,6 +42,8 @@ public partial class ContentService
         if (!_assemblyService.TryGetLoader(clientAssembly, out var loader))
             return;
         
+        OnContentRun?.Invoke(new ContentRunEvent(engine,_fileService.HashApi));
+        
         await Task.Run(() => loader.Main(args), cancellationToken);
     }
 }
@@ -48,3 +55,6 @@ public class FuckRedialApi : IRedialApi
         
     }
 }
+
+public record struct ContentRunEvent(IFileApi Engine, IFileApi Content);
+

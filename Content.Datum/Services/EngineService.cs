@@ -16,17 +16,20 @@ public class EngineService
     private readonly VarService _varService;
     private readonly FileService _fileService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly AssemblyService _assemblyService;
 
     public Dictionary<string, VersionInfo> VersionInfos;
     public Dictionary<string, Module> ModuleInfos;
 
-    public EngineService(RestService restService, DebugService debugService, VarService varService,FileService fileService, IServiceProvider serviceProvider)
+    public EngineService(RestService restService, DebugService debugService, VarService varService,
+        FileService fileService, IServiceProvider serviceProvider, AssemblyService assemblyService)
     {
         _restService = restService;
         _debugService = debugService;
         _varService = varService;
         _fileService = fileService;
         _serviceProvider = serviceProvider;
+        _assemblyService = assemblyService;
 
         var loadTask = Task.Run(() => LoadEngineManifest(CancellationToken.None));
         loadTask.Wait();
@@ -89,7 +92,7 @@ public class EngineService
 
         try
         {
-            return new AssemblyApi(_fileService.OpenZip(version, _fileService.EngineFileApi),_serviceProvider);
+            return _assemblyService.Mount(_fileService.OpenZip(version, _fileService.EngineFileApi));
         }
         catch (Exception e)
         {
@@ -170,7 +173,7 @@ public class EngineService
         
         try
         {
-            return new AssemblyApi(_fileService.OpenZip(fileName, _fileService.EngineFileApi),_serviceProvider);
+            return _assemblyService.Mount(_fileService.OpenZip(fileName, _fileService.EngineFileApi));
         }
         catch (Exception e)
         {
