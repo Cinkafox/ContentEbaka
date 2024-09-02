@@ -27,7 +27,7 @@ public class RunnerService
         _authService = authService;
     }
     
-    public async Task Run(string[] runArgs,RobustBuildInfo buildInfo,CancellationToken cancellationToken)
+    public async Task Run(string[] runArgs,RobustBuildInfo buildInfo,IRedialApi redialApi,CancellationToken cancellationToken)
     {
         _debugService.Log("Start Content!");
 
@@ -49,7 +49,7 @@ public class RunnerService
         if(module is not null)
             extraMounts.Add( new ApiMount(module, "/"));
         
-        var args = new MainArgs(runArgs, engine, new FuckRedialApi(), extraMounts);
+        var args = new MainArgs(runArgs, engine, redialApi, extraMounts);
         
         if (!_assemblyService.TryOpenAssembly(_varService.RobustAssemblyName, engine, out var clientAssembly))
         {
@@ -60,47 +60,5 @@ public class RunnerService
             return;
         
         await Task.Run(() => loader.Main(args), cancellationToken);
-    }
-    
-    public async Task RunGame(RobustUrl url)
-    {
-        using var cancelTokenSource = new CancellationTokenSource();
-        var buildInfo = await _contentService.GetBuildInfo(url, cancelTokenSource.Token);
-
-        if (buildInfo.BuildInfo.auth.mode != "Disabled" && _authService.CurrentLogin != null)
-        {
-            var account = _authService.CurrentLogin;
-            Environment.SetEnvironmentVariable("ROBUST_AUTH_TOKEN", account.Token.Token);
-            Environment.SetEnvironmentVariable("ROBUST_AUTH_USERID", account.UserId.ToString());
-            Environment.SetEnvironmentVariable("ROBUST_AUTH_PUBKEY", buildInfo.BuildInfo.auth.public_key);
-            Environment.SetEnvironmentVariable("ROBUST_AUTH_SERVER", "https://auth.spacestation14.com/");
-        }
-            
-        var args = new List<string>
-        {
-            // Pass username to launched client.
-            // We don't load username from client_config.toml when launched via launcher.
-            "--username", _authService.CurrentLogin?.Username ?? "Alise",
-
-            // Tell game we are launcher
-            "--cvar", "launch.launcher=true"
-        };
-
-        var connectionString = url.ToString();
-        if (!string.IsNullOrEmpty(buildInfo.BuildInfo.connect_address))
-            connectionString = buildInfo.BuildInfo.connect_address;
-                
-        // We are using the launcher. Don't show main menu etc..
-        // Note: --launcher also implied --connect.
-        // For this reason, content bundles do not set --launcher.
-        args.Add("--launcher");
-
-        args.Add("--connect-address");
-        args.Add(connectionString);
-                
-        args.Add("--ss14-address");
-        args.Add(url.ToString());
-
-        await Run(args.ToArray(),buildInfo, cancelTokenSource.Token);
     }
 }

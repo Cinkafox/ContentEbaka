@@ -19,15 +19,11 @@ public class ApplicationService(
     RunnerService runnerService,
     AuthWindow authWindow,
     ServerListWindow serverListWindow,
-    FileService fileService)
-    : IExecutePoint
+    FileService fileService, 
+    ContentService contentService)
+    : IExecutePoint, IRedialApi
 {
-    private readonly DebugService _debugService = debugService;
-    private readonly AuthService _authService = authService;
-    private readonly RunnerService _runnerService = runnerService;
-    private readonly AuthWindow _authWindow = authWindow;
-    private readonly ServerListWindow _serverListWindow = serverListWindow;
-    private readonly FileService _fileService = fileService;
+    
     private readonly IReadWriteFileApi _authFileApi = fileService.CreateFileApi("/auth");
     private ApplicationOption _option = default!;
 
@@ -37,33 +33,40 @@ public class ApplicationService(
         Application.QuitKey = Key.C.WithCtrl;
         Task.Run(RunAsync).Wait();
     }
+    
+    public void Redial(Uri uri, string text = "")
+    {
+        _option.Url = uri.ToString();
+        debugService.Debug("Redirect " + uri);
+        StartProcess();
+    }
 
     private async Task RunAsync()
     {
         if (string.IsNullOrWhiteSpace(_option.Login))
         {
             var successReadAuthDat = await ReadAuthDat();
-            _debugService.Debug("Reading auth data");
+            debugService.Debug("Reading auth data");
         
             if (!successReadAuthDat)
             {
-                _debugService.Debug("Auth is require.");
+                debugService.Debug("Auth is require.");
             
                 do
                 {
                     Application.Init();
-                    Application.Run(_authWindow);
+                    Application.Run(authWindow);
                     Application.Shutdown();
-                    _debugService.Debug("Trying to auth...");
+                    debugService.Debug("Trying to auth...");
 
-                } while (await _authService.Auth(_authWindow.Login, _authWindow.Password));
+                } while (await authService.Auth(authWindow.Login, authWindow.Password));
             
-                _debugService.Debug("Success! Going to menu");
-                await SaveAuthDat(_authWindow.Login, _authWindow.Password);
+                debugService.Debug("Success! Going to menu");
+                await SaveAuthDat(authWindow.Login, authWindow.Password);
             }
 
-            _option.Login = _authService.AuthDatum.Item1;
-            _option.Password = _authService.AuthDatum.Item2;
+            _option.Login = authService.AuthDatum.Item1;
+            _option.Password = authService.AuthDatum.Item2;
         }
         
         if (string.IsNullOrWhiteSpace(_option.Url))
@@ -72,59 +75,44 @@ public class ApplicationService(
             return;
         }
 
-        await RunClient();
+        await RunGame();
     }
 
     private void RunUi()
     {
-        Task.Run(_serverListWindow.LoadData);
+        Task.Run(serverListWindow.LoadData);
         Application.Init();
-        Application.Run(_serverListWindow);
+        Application.Run(serverListWindow);
         Application.Shutdown();
 
-        if (_serverListWindow.SelectedUrl is null)
+        if (serverListWindow.SelectedUrl is null)
         {
-            _debugService.Debug("Nothing to do now! Exit!");
+            debugService.Debug("Nothing to do now! Exit!");
             return;
         }
 
-        _option.Url = _serverListWindow.SelectedUrl;
-
-        List<string> args = new List<string>();
-        args.Add("--login");
-        args.Add(_option.Login);
-        args.Add("--password");
-        args.Add(_option.Password);
-        args.Add("--url");
-        args.Add(_option.Url);
-
-        var info = new ProcessStartInfo(Environment.ProcessPath!, args)
-        {
-            UseShellExecute = true
-        };
-
-        Process.Start(info);
+        _option.Url = serverListWindow.SelectedUrl;
+        
+        StartProcess();
     }
 
     private async Task<bool> ReadAuthDat()
     {
-        if (_authFileApi.TryOpen("auth.dat", out var stream))
-        {
-            string? login;
-            string? password;
+        if (!_authFileApi.TryOpen("auth.dat", out var stream)) 
+            return false;
+        
+        string? login;
+        string? password;
             
-            using (var sw = new StreamReader(stream))
-            {
-                login = await sw.ReadLineAsync();
-                password = await sw.ReadLineAsync();
-                if(login is null || password is null) return false;
-            }
-            stream.Close();
-
-            return await _authService.Auth(login, password);
+        using (var sw = new StreamReader(stream))
+        {
+            login = await sw.ReadLineAsync();
+            password = await sw.ReadLineAsync();
+            if(login is null || password is null) return false;
         }
+        stream.Close();
 
-        return false;
+        return await authService.Auth(login, password);
     }
 
     private async Task SaveAuthDat(string login, string password)
@@ -137,17 +125,66 @@ public class ApplicationService(
         ms.Seek(0, SeekOrigin.Begin);
         _authFileApi.Save("auth.dat", ms);
     }
-    
-    private async Task RunClient()
-    {
-        var successAuth = await _authService.Auth(_option.Login, _option.Password);
-        if (!successAuth)
-        {
-            _debugService.Debug("Failed to auth with: " + _option.Login + " " + _option.Password);
-            return;
-        }
 
-        await _runnerService.RunGame(new RobustUrl(_option.Url));
+    private async Task RunGame()
+    {
+        var url = new RobustUrl(_option.Url);
+        
+        using var cancelTokenSource = new CancellationTokenSource();
+        var buildInfo = await contentService.GetBuildInfo(url, cancelTokenSource.Token);
+
+        if (buildInfo.BuildInfo.auth.mode != "Disabled")
+        {
+            var successAuth = await authService.Auth(_option.Login, _option.Password);
+            if (!successAuth)
+            {
+                debugService.Debug("Failed to auth with: " + _option.Login + " " + _option.Password);
+                return;
+            }
+            
+            var account = authService.CurrentLogin!;
+            Environment.SetEnvironmentVariable("ROBUST_AUTH_TOKEN", account.Token.Token);
+            Environment.SetEnvironmentVariable("ROBUST_AUTH_USERID", account.UserId.ToString());
+            Environment.SetEnvironmentVariable("ROBUST_AUTH_PUBKEY", buildInfo.BuildInfo.auth.public_key);
+            Environment.SetEnvironmentVariable("ROBUST_AUTH_SERVER", "https://auth.spacestation14.com/");
+        }
+            
+        var args = new List<string>
+        {
+            // Pass username to launched client.
+            // We don't load username from client_config.toml when launched via launcher.
+            "--username", string.IsNullOrEmpty(_option.Login) ? "Alice" : _option.Login,
+
+            // Tell game we are launcher
+            "--cvar", "launch.launcher=true"
+        };
+
+        var connectionString = url.ToString();
+        if (!string.IsNullOrEmpty(buildInfo.BuildInfo.connect_address))
+            connectionString = buildInfo.BuildInfo.connect_address;
+                
+        // We are using the launcher. Don't show main menu etc..
+        // Note: --launcher also implied --connect.
+        // For this reason, content bundles do not set --launcher.
+        args.Add("--launcher");
+
+        args.Add("--connect-address");
+        args.Add(connectionString);
+                
+        args.Add("--ss14-address");
+        args.Add(url.ToString());
+
+        await runnerService.Run(args.ToArray(),buildInfo, this, cancelTokenSource.Token);
+    }
+    
+    private void StartProcess()
+    {
+        var info = new ProcessStartInfo(Environment.ProcessPath!, _option.Args)
+        {
+            UseShellExecute = true
+        };
+
+        Process.Start(info);
     }
 }
 
@@ -160,6 +197,11 @@ public class ApplicationOption
     public string Login = string.Empty;
     public string Password = string.Empty;
     public string Url = string.Empty;
+    
+    public string[] Args =>
+    [
+        "--login", Login, "--password", Password, "--url", Url
+    ];
 
     public ApplicationOption(string[] args)
     {
