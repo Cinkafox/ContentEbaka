@@ -1,6 +1,6 @@
 using ContentDownloader.Utils;
 
-namespace ContentDownloader.Data;
+namespace Content.Datum.Data;
 
 public class RobustUrl
 {

@@ -14,7 +14,5 @@ public static class Dependency
         serviceCollection.AddSingleton<RestService>();
         serviceCollection.AddSingleton<VarService>();
         serviceCollection.AddSingleton<AssemblyService>();
-        serviceCollection.AddSingleton<ReflectionService>();
-        serviceCollection.AddSingleton<DynamicService>();
     }
 }

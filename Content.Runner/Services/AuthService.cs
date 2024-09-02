@@ -9,41 +9,22 @@ namespace Content.Runner.Services;
 public class AuthService
 {
     private readonly RestService _restService;
-    private readonly FileService _fileService;
     private readonly HttpClient _httpClient = new HttpClient();
     
     public LoginInfo? CurrentLogin;
-    public IReadWriteFileApi AuthFileApi;
 
-    public AuthService(RestService restService, FileService fileService)
+    public (string, string) AuthDatum = (string.Empty, string.Empty);
+
+    public AuthService(RestService restService)
     {
         _restService = restService;
-        _fileService = fileService;
-        AuthFileApi = fileService.CreateFileApi("/auth");
-
-        if (AuthFileApi.TryOpen("auth.dat", out var stream))
-        {
-            string? login;
-            string? password;
-            
-            using (var sw = new StreamReader(stream))
-            {
-                login = sw.ReadLine();
-                password = sw.ReadLine();
-                if(login is null || password is null) return;
-            }
-            stream.Close();
-            
-            var task = Task.Run(() => Auth(new AuthenticateRequest(login, password)));
-            task.Wait();
-        }
     }
 
-    public async Task<bool> Auth(AuthenticateRequest request)
+    public async Task<bool> Auth(string login, string password)
     {
         var authUrl = new Uri("https://auth.spacestation14.com/api/auth/authenticate");
 
-        var result = await _restService.PostAsync<AuthenticateResponse, AuthenticateRequest>(request, authUrl, CancellationToken.None);
+        var result = await _restService.PostAsync<AuthenticateResponse, AuthenticateRequest>(new AuthenticateRequest(login, password), authUrl, CancellationToken.None);
         if (result.Value is null) return false;
         CurrentLogin = new LoginInfo()
         {
@@ -51,14 +32,7 @@ public class AuthService
             UserId = result.Value.UserId
         };
 
-        using var ms = new MemoryStream();
-        await using var sw = new StreamWriter(ms);
-        await sw.WriteLineAsync(request.Username);
-        await sw.WriteLineAsync(request.Password);
-        await sw.FlushAsync();
-        ms.Seek(0, SeekOrigin.Begin);
-        
-        AuthFileApi.Save("auth.dat", ms);
+        AuthDatum = (login, password);
 
         return true;
     }

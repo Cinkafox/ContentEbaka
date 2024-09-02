@@ -3,12 +3,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Content.Datum.Data.FileApis;
-using HarmonyLib;
 using Robust.LoaderApi;
 
 namespace Content.Datum.Services;
 
-public class  AssemblyService
+public class AssemblyService
 {
     private readonly DebugService _debugService;
 

@@ -8,9 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.Downloader", "Conte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.Runner", "Content.Runner\Content.Runner.csproj", "{BA029C09-ED1C-41A7-A9EA-C1B93883D8C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.Runner.Android", "Content.Runner.Android\Content.Runner.Android.csproj", "{33FB2E93-F203-4080-9883-A00FB1A6A6BA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.LuaTest", "Content.LuaTest\Content.LuaTest.csproj", "{58C08D8D-FFDA-4BBE-9DA6-6646CB1AB0C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Content.UI", "Content.UI\Content.UI.csproj", "{E12E0C2F-A544-4A6E-B5CC-0FEFB3E167AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,13 +32,9 @@ Global
 		{BA029C09-ED1C-41A7-A9EA-C1B93883D8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA029C09-ED1C-41A7-A9EA-C1B93883D8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA029C09-ED1C-41A7-A9EA-C1B93883D8C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33FB2E93-F203-4080-9883-A00FB1A6A6BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33FB2E93-F203-4080-9883-A00FB1A6A6BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33FB2E93-F203-4080-9883-A00FB1A6A6BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33FB2E93-F203-4080-9883-A00FB1A6A6BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{58C08D8D-FFDA-4BBE-9DA6-6646CB1AB0C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{58C08D8D-FFDA-4BBE-9DA6-6646CB1AB0C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{58C08D8D-FFDA-4BBE-9DA6-6646CB1AB0C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{58C08D8D-FFDA-4BBE-9DA6-6646CB1AB0C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E12E0C2F-A544-4A6E-B5CC-0FEFB3E167AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E12E0C2F-A544-4A6E-B5CC-0FEFB3E167AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E12E0C2F-A544-4A6E-B5CC-0FEFB3E167AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E12E0C2F-A544-4A6E-B5CC-0FEFB3E167AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

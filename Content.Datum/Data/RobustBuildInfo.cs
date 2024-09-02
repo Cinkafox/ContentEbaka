@@ -1,8 +1,6 @@
-using Content.Datum.Data;
 using Content.Datum.Utils;
-using ContentDownloader.Utils;
 
-namespace ContentDownloader.Data;
+namespace Content.Datum.Data;
 
 public class RobustBuildInfo
 {

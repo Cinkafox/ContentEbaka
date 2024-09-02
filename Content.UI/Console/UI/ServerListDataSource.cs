@@ -4,7 +4,7 @@ using Content.Datum.Data;
 using Terminal.Gui;
 using Attribute = Terminal.Gui.Attribute;
 
-namespace Content.Runner.UI;
+namespace Content.Downloader.UI;
 
 public sealed class ServerListDataSource : IListDataSource
 {

@@ -7,7 +7,6 @@ using Content.Datum.Data;
 using Content.Datum.Data.FileApis;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Utils;
-using ContentDownloader.Data;
 using ContentDownloader.Utils;
 
 namespace Content.Datum.Services;
@@ -20,11 +19,10 @@ public partial class ContentService
     private readonly FileService _fileService;
     private readonly EngineService _engineService;
     private readonly AssemblyService _assemblyService;
-    private readonly ReflectionService _reflectionService;
     private readonly HttpClient _http = new HttpClient();
 
     public ContentService(RestService restService, DebugService debugService, VarService varService, 
-        FileService fileService, EngineService engineService, AssemblyService assemblyService, ReflectionService reflectionService)
+        FileService fileService, EngineService engineService, AssemblyService assemblyService)
     {
         _restService = restService;
         _debugService = debugService;
@@ -32,7 +30,6 @@ public partial class ContentService
         _fileService = fileService;
         _engineService = engineService;
         _assemblyService = assemblyService;
-        _reflectionService = reflectionService;
     }
 
     public async Task<RobustBuildInfo> GetBuildInfo(RobustUrl url,CancellationToken cancellationToken)

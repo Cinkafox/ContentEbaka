@@ -1,8 +1,8 @@
 using Robust.LoaderApi;
 
-namespace ContentDownloader.Data;
+namespace Content.Datum.Data;
 
-internal sealed class MainArgs : IMainArgs
+public sealed class MainArgs : IMainArgs
 {
     public MainArgs(string[] args, IFileApi fileApi, IRedialApi? redialApi, IEnumerable<ApiMount>? apiMounts)
     {

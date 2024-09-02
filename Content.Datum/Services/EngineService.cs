@@ -3,7 +3,6 @@ using Content.Datum.Data;
 using Content.Datum.Data.FileApis;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Utils;
-using ContentDownloader.Data;
 using ContentDownloader.Utils;
 using Robust.LoaderApi;
 
@@ -48,7 +47,6 @@ public class EngineService
         if(moduleInfo.Value is null) return;
         ModuleInfos = moduleInfo.Value.Modules;
         
-        _debugService.Debug("MAMAM");
         foreach (var f in ModuleInfos.Keys)
         {
             _debugService.Debug(f);
@@ -67,7 +65,6 @@ public class EngineService
         if (bestRid == null)
         {
             bestRid = "linux-x64";
-            //throw new Exception("No engine version available for our platform!");
         }
 
         _debugService.Log("Selecting RID" + bestRid);

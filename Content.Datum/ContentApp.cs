@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Content.Datum.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Content.Datum;
 
@@ -14,5 +15,10 @@ public class ContentApp
     public void Build()
     {
         ServiceProvider = ServiceCollection.BuildServiceProvider();
+    }
+
+    public void Run(string[] args)
+    {
+        ServiceProvider.GetService<IExecutePoint>()!.Run(args);
     }
 }

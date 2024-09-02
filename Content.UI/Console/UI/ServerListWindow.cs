@@ -1,14 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using Content.Datum.Data;
 using Content.Datum.Services;
-using ContentDownloader.Data;
+using Content.Downloader.UI;
 using Terminal.Gui;
 
-namespace Content.Downloader.UI;
+namespace Content.UI.Console.UI;
 
 public sealed class ServerListWindow : Window
 {
     private readonly RestService _restService;
+
+    public string? SelectedUrl = null;
 
     public List<Uri> HubUris = new List<Uri>()
     { 
@@ -68,7 +70,7 @@ public sealed class ServerListWindow : Window
     private void ServerListViewOnOpenSelectedItem(object? sender, ListViewItemEventArgs e)
     {
         var item = (string)e.Value;
-        Program.Url = new RobustUrl(item);
+        SelectedUrl = item;
         RequestStop();
     }
 
@@ -77,7 +79,7 @@ public sealed class ServerListWindow : Window
         ServerListDataSource.Clear();
         var a = new ObservableCollection<string>()
         {
-            "Loadint... Please wait"
+            "Loading... Please wait"
         };
         
         await _serverListView.SetSourceAsync(a);

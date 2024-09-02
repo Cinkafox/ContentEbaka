@@ -15,11 +15,7 @@
         <EmbeddedResource Include="Utils\runtime.json">
             <LogicalName>Utility.runtime.json</LogicalName>
         </EmbeddedResource>
-        <PackageReference Include="HarmonyX-Fix" Version="2.11.0" />
-        <PackageReference Include="Lib.Harmony" Version="2.3.3" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.6.24327.7" />
-      <PackageReference Include="MonoMod" Version="22.7.31.1" />
-      <PackageReference Include="MonoMod.Core" Version="1.1.2" />
       <PackageReference Include="SharpZstd.Interop" Version="1.5.5-beta1" />
       <PackageReference Include="Robust.Natives" Version="0.1.1" />
     </ItemGroup>
