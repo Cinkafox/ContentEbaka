@@ -1,4 +1,5 @@
 ﻿using Content.Datum.Data;
+using Content.Datum.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Content.Datum;
@@ -34,7 +35,14 @@ public class ContentApp
 
     public ContentApp Run(string[] args)
     {
-        _serviceProvider.GetService<IExecutePoint>()?.Run(args);
+        try
+        {
+            _serviceProvider.GetService<IExecutePoint>()?.Run(args);
+        }
+        catch (Exception e)
+        {
+            _serviceProvider.GetService<DebugService>()!.Error(e.Message);
+        }
         return this;
     }
 }

@@ -136,7 +136,7 @@ public class ApplicationService(
             var successAuth = await authService.Auth(_option.Login, _option.Password);
             if (!successAuth)
             {
-                debugService.Debug("Failed to auth with: " + _option.Login + " " + _option.Password);
+                debugService.Error("Failed to auth with: " + _option.Login);
                 return;
             }
 
