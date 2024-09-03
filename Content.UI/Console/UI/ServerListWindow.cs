@@ -1,7 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Content.Datum.Data;
 using Content.Datum.Services;
-using Content.Downloader.UI;
 using Terminal.Gui;
 
 namespace Content.UI.Console.UI;
@@ -10,52 +9,53 @@ public sealed class ServerListWindow : Window
 {
     private readonly RestService _restService;
 
-    public string? SelectedUrl = null;
+    private readonly ListView _serverListView;
 
-    public List<Uri> HubUris = new List<Uri>()
-    { 
-        new ("https://cdn.spacestationmultiverse.com/hub/api/servers"),
-        new ("https://hub.spacestation14.com/api/servers")
+    public List<Uri> HubUris = new()
+    {
+        new("https://cdn.spacestationmultiverse.com/hub/api/servers"),
+        new("https://hub.spacestation14.com/api/servers")
     };
 
+    public string? SelectedUrl;
+
     public ServerListDataSource ServerListDataSource = new();
-    
-    private readonly ListView _serverListView;
+
     public ServerListWindow(RestService restService)
     {
         _restService = restService;
-        _serverListView = new ListView()
+        _serverListView = new ListView
         {
-            Text = "Server list", Height = this.Height-2, Width = Dim.Fill()
+            Text = "Server list", Height = Height - 2, Width = Dim.Fill()
         };
-        var filterInput = new TextField()
+        var filterInput = new TextField
         {
             Height = 2,
-            Width = Dim.Percent(50), 
-            Y = Pos.Bottom(_serverListView), 
-            Border = { LineStyle = LineStyle.Heavy, Thickness = new Thickness(0,1,1,0) }
+            Width = Dim.Percent(50),
+            Y = Pos.Bottom(_serverListView),
+            Border = { LineStyle = LineStyle.Heavy, Thickness = new Thickness(0, 1, 1, 0) }
         };
-        var exitButton = new Button()
+        var exitButton = new Button
         {
             Text = "EXIT",
             Y = Pos.Bottom(_serverListView) + 1,
-            X = Pos.Right(filterInput) + 2,
+            X = Pos.Right(filterInput) + 2
         };
 
-        var updateButton = new Button()
+        var updateButton = new Button
         {
             Text = "Update",
             Y = Pos.Bottom(_serverListView) + 1,
-            X = Pos.Right(exitButton) + 2,
+            X = Pos.Right(exitButton) + 2
         };
 
-        exitButton.MouseClick += (_,_) => RequestStop();
+        exitButton.MouseClick += (_, _) => RequestStop();
         updateButton.MouseClick += (_, _) => { };
 
         filterInput.TextChanging += FilterInputOnTextChanging;
-        
+
         _serverListView.OpenSelectedItem += ServerListViewOnOpenSelectedItem;
-        
+
         Add(_serverListView);
         Add(filterInput);
         Add(exitButton);
@@ -77,23 +77,24 @@ public sealed class ServerListWindow : Window
     public async Task LoadData()
     {
         ServerListDataSource.Clear();
-        var a = new ObservableCollection<string>()
+        var a = new ObservableCollection<string>
         {
             "Loading... Please wait"
         };
-        
+
         await _serverListView.SetSourceAsync(a);
         foreach (var hubUrl in HubUris)
         {
             a.Add("Loading:" + hubUrl);
             await LoadData(hubUrl);
         }
+
         _serverListView.Source = ServerListDataSource;
     }
 
     public async Task LoadData(Uri hubUri)
     {
-        var servers = await _restService.GetAsyncDefault<List<ServerInfo>>(hubUri,[],CancellationToken.None);
+        var servers = await _restService.GetAsyncDefault<List<ServerInfo>>(hubUri, [], CancellationToken.None);
         ServerListDataSource.Append(servers);
     }
 }

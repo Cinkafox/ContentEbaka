@@ -10,10 +10,10 @@ public sealed class BandwidthStream : Stream
 
     // TotalBuckets MUST be power of two!
     private const int TotalBuckets = NumSeconds * BucketsPerSecond;
-
-    private readonly Stopwatch _stopwatch;
     private readonly Stream _baseStream;
     private readonly long[] _buckets;
+
+    private readonly Stopwatch _stopwatch;
 
     private long _bucketIndex;
 
@@ -22,6 +22,20 @@ public sealed class BandwidthStream : Stream
         _stopwatch = Stopwatch.StartNew();
         _baseStream = baseStream;
         _buckets = new long[TotalBuckets];
+    }
+
+    public override bool CanRead => _baseStream.CanRead;
+
+    public override bool CanSeek => _baseStream.CanSeek;
+
+    public override bool CanWrite => _baseStream.CanWrite;
+
+    public override long Length => _baseStream.Length;
+
+    public override long Position
+    {
+        get => _baseStream.Position;
+        set => _baseStream.Position = value;
     }
 
     private void TrackBandwidth(long value)
@@ -35,17 +49,11 @@ public sealed class BandwidthStream : Stream
         {
             var diff = bucketIdx - _bucketIndex;
             if (diff > TotalBuckets)
-            {
                 for (var i = _bucketIndex; i < bucketIdx; i++)
-                {
                     _buckets[i & bucketMask] = 0;
-                }
-            }
             else
-            {
                 // We managed to skip so much time the whole buffer is empty.
                 Array.Clear(_buckets);
-            }
 
             _bucketIndex = bucketIdx;
         }
@@ -64,10 +72,7 @@ public sealed class BandwidthStream : Stream
     {
         var sum = 0L;
 
-        for (var i = 0; i < TotalBuckets; i++)
-        {
-            sum += _buckets[i];
-        }
+        for (var i = 0; i < TotalBuckets; i++) sum += _buckets[i];
 
         return sum >> BucketDivisor;
     }
@@ -129,19 +134,5 @@ public sealed class BandwidthStream : Stream
     {
         await _baseStream.WriteAsync(buffer, cancellationToken);
         TrackBandwidth(buffer.Length);
-    }
-
-    public override bool CanRead => _baseStream.CanRead;
-
-    public override bool CanSeek => _baseStream.CanSeek;
-
-    public override bool CanWrite => _baseStream.CanWrite;
-
-    public override long Length => _baseStream.Length;
-
-    public override long Position
-    {
-        get => _baseStream.Position;
-        set => _baseStream.Position = value;
     }
 }

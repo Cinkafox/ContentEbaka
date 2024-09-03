@@ -29,10 +29,10 @@ public class ApplicationService(
 
             selectedUrl = window.SelectedUrl;
         }
-        
+
         try
         {
-            if (selectedUrl is null) 
+            if (selectedUrl is null)
                 throw new Exception("Exit with no url");
             Url = new RobustUrl(selectedUrl);
         }
@@ -41,7 +41,7 @@ public class ApplicationService(
             debugService.Log($"ERROR WHILE PARSING {selectedUrl}: {e.Message}");
             return;
         }
-            
+
         var task = Task.Run(Download);
         task.Wait();
     }
@@ -50,20 +50,20 @@ public class ApplicationService(
     {
         url = null;
         if (args.Length == 0) return false;
-        
+
         url = args[0];
         return true;
     }
-    
+
     private async Task Download()
     {
         using var cancelTokenSource = new CancellationTokenSource();
         var buildInfo = await contentService.GetBuildInfo(Url!, cancelTokenSource.Token);
         var path = Path.GetTempPath() + buildInfo.BuildInfo.build.manifest_hash + "\\";
-        
-        if(!Directory.Exists(path))
+
+        if (!Directory.Exists(path))
             await contentService.Unpack(buildInfo.RobustManifestInfo, new FileApi(path), cancelTokenSource.Token);
-        
+
         debugService.Log("Opening file: " + path);
         Process.Start(new ProcessStartInfo("explorer.exe", path));
     }

@@ -4,14 +4,16 @@ using Content.Datum.Data;
 using Terminal.Gui;
 using Attribute = Terminal.Gui.Attribute;
 
-namespace Content.Downloader.UI;
+namespace Content.UI.Console.UI;
 
 public sealed class ServerListDataSource : IListDataSource
 {
-    public int Count => FilteredAddresses.Count;
-    public int Length => FilteredAddresses.Count;
-    public bool SuspendCollectionChangedEvent { get; set; }
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+    private readonly List<string> _serverAddresses = new();
+    private string? _currentFilter;
+    private List<string>? _filteredAddresses;
+    private readonly Attribute _selectedAttribute = new(Color.Black, Color.White);
+
+    private readonly Dictionary<string, ServerInfo> ServerList = new();
 
     public List<string> FilteredAddresses
     {
@@ -21,12 +23,11 @@ public sealed class ServerListDataSource : IListDataSource
             return _serverAddresses;
         }
     }
-    
-    private Dictionary<string, ServerInfo> ServerList = new();
-    private readonly List<string> _serverAddresses = new();
-    private Attribute _selectedAttribute = new(Color.Black, Color.White);
-    private string? _currentFilter;
-    private List<string>? _filteredAddresses = null;
+
+    public int Count => FilteredAddresses.Count;
+    public int Length => FilteredAddresses.Count;
+    public bool SuspendCollectionChangedEvent { get; set; }
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
     public bool IsMarked(int item)
     {
@@ -40,16 +41,14 @@ public sealed class ServerListDataSource : IListDataSource
 
         var attr = driver.GetAttribute();
 
-        if (selected)
-        {
-            driver.SetAttribute(_selectedAttribute);
-        }
+        if (selected) driver.SetAttribute(_selectedAttribute);
 
         var ip = FilteredAddresses[item];
         var serverInfo = ServerList[ip];
 
-        var str = $"{Virovn(item.ToString(),Length.ToString().Length)}| {Virovn(serverInfo.statusData.name,70)} {Virovn(serverInfo.statusData.players.ToString(),4)}/{Virovn(serverInfo.statusData.soft_max_players.ToString(),4)}";
-        
+        var str =
+            $"{Virovn(item.ToString(), Length.ToString().Length)}| {Virovn(serverInfo.statusData.name, 70)} {Virovn(serverInfo.statusData.players.ToString(), 4)}/{Virovn(serverInfo.statusData.soft_max_players.ToString(), 4)}";
+
         driver.AddStr(str);
         driver.SetAttribute(attr);
     }
@@ -64,20 +63,22 @@ public sealed class ServerListDataSource : IListDataSource
         return FilteredAddresses;
     }
 
+    public void Dispose()
+    {
+        // TODO release managed resources here
+    }
+
     public void Add(ServerInfo serverInfo)
     {
         if (!ServerList.TryGetValue(serverInfo.address, out _))
             _serverAddresses.Add(serverInfo.address);
-        
+
         ServerList[serverInfo.address] = serverInfo;
     }
 
     public void Append(IEnumerable<ServerInfo> serverInfos)
     {
-        foreach (var serverInfo in serverInfos)
-        {
-            Add(serverInfo);
-        }
+        foreach (var serverInfo in serverInfos) Add(serverInfo);
     }
 
     public void Clear()
@@ -115,16 +116,8 @@ public sealed class ServerListDataSource : IListDataSource
         var col = word.Length;
         var len = max - col;
         var str = "";
-        for (var i = 0; i < len; i++)
-        {
-            str += " ";
-        }
+        for (var i = 0; i < len; i++) str += " ";
 
         return word + str;
-    }
-
-    public void Dispose()
-    {
-        // TODO release managed resources here
     }
 }

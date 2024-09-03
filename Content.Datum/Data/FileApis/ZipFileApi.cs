@@ -10,18 +10,6 @@ public sealed class ZipFileApi : IFileApi
     private readonly ZipArchive _archive;
     private readonly string? _prefix;
 
-    public static ZipFileApi FromPath(string path)
-    {
-        var zipArchive = new ZipArchive(File.OpenRead(path), ZipArchiveMode.Read);
-        
-        var prefix = "";
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            prefix = "Space Station 14.app/Contents/Resources/";
-        }
-        return new ZipFileApi(zipArchive, prefix);
-    }
-
     public ZipFileApi(ZipArchive archive, string? prefix)
     {
         _archive = archive;
@@ -53,14 +41,21 @@ public sealed class ZipFileApi : IFileApi
         get
         {
             if (_prefix != null)
-            {
                 return _archive.Entries
                     .Where(e => e.Name != "" && e.FullName.StartsWith(_prefix))
                     .Select(e => e.FullName[_prefix.Length..]);
-            }
             return _archive.Entries
                 .Where(e => e.Name != "")
                 .Select(entry => entry.FullName);
         }
+    }
+
+    public static ZipFileApi FromPath(string path)
+    {
+        var zipArchive = new ZipArchive(File.OpenRead(path), ZipArchiveMode.Read);
+
+        var prefix = "";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) prefix = "Space Station 14.app/Contents/Resources/";
+        return new ZipFileApi(zipArchive, prefix);
     }
 }

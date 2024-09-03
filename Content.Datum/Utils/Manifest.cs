@@ -6,15 +6,14 @@ namespace Content.Datum.Utils;
 public class ManifestReader : StreamReader
 {
     public const int BufferSize = 128;
-    public string ManifestVersion { get; private set; } = "";
-    public int CurrentId { get; private set; }
-    
+
     public ManifestReader(Stream stream) : base(stream)
     {
         ReadManifestVersion();
     }
 
-    public ManifestReader(Stream stream, bool detectEncodingFromByteOrderMarks) : base(stream, detectEncodingFromByteOrderMarks)
+    public ManifestReader(Stream stream, bool detectEncodingFromByteOrderMarks) : base(stream,
+        detectEncodingFromByteOrderMarks)
     {
         ReadManifestVersion();
     }
@@ -24,17 +23,21 @@ public class ManifestReader : StreamReader
         ReadManifestVersion();
     }
 
-    public ManifestReader(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks) : base(stream, encoding, detectEncodingFromByteOrderMarks)
+    public ManifestReader(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks) : base(stream,
+        encoding, detectEncodingFromByteOrderMarks)
     {
         ReadManifestVersion();
     }
 
-    public ManifestReader(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks, int bufferSize) : base(stream, encoding, detectEncodingFromByteOrderMarks, bufferSize)
+    public ManifestReader(Stream stream, Encoding encoding, bool detectEncodingFromByteOrderMarks, int bufferSize) :
+        base(stream, encoding, detectEncodingFromByteOrderMarks, bufferSize)
     {
         ReadManifestVersion();
     }
 
-    public ManifestReader(Stream stream, Encoding? encoding = null, bool detectEncodingFromByteOrderMarks = true, int bufferSize = -1, bool leaveOpen = false) : base(stream, encoding, detectEncodingFromByteOrderMarks, bufferSize, leaveOpen)
+    public ManifestReader(Stream stream, Encoding? encoding = null, bool detectEncodingFromByteOrderMarks = true,
+        int bufferSize = -1, bool leaveOpen = false) : base(stream, encoding, detectEncodingFromByteOrderMarks,
+        bufferSize, leaveOpen)
     {
         ReadManifestVersion();
     }
@@ -44,7 +47,8 @@ public class ManifestReader : StreamReader
         ReadManifestVersion();
     }
 
-    public ManifestReader(string path, bool detectEncodingFromByteOrderMarks) : base(path, detectEncodingFromByteOrderMarks)
+    public ManifestReader(string path, bool detectEncodingFromByteOrderMarks) : base(path,
+        detectEncodingFromByteOrderMarks)
     {
         ReadManifestVersion();
     }
@@ -59,20 +63,26 @@ public class ManifestReader : StreamReader
         ReadManifestVersion();
     }
 
-    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks) : base(path, encoding, detectEncodingFromByteOrderMarks)
+    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks) : base(path, encoding,
+        detectEncodingFromByteOrderMarks)
     {
         ReadManifestVersion();
     }
 
-    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks, int bufferSize) : base(path, encoding, detectEncodingFromByteOrderMarks, bufferSize)
+    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks, int bufferSize) : base(
+        path, encoding, detectEncodingFromByteOrderMarks, bufferSize)
     {
         ReadManifestVersion();
     }
 
-    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks, FileStreamOptions options) : base(path, encoding, detectEncodingFromByteOrderMarks, options)
+    public ManifestReader(string path, Encoding encoding, bool detectEncodingFromByteOrderMarks,
+        FileStreamOptions options) : base(path, encoding, detectEncodingFromByteOrderMarks, options)
     {
         ReadManifestVersion();
     }
+
+    public string ManifestVersion { get; private set; } = "";
+    public int CurrentId { get; private set; }
 
     private void ReadManifestVersion()
     {
@@ -107,4 +117,5 @@ public class ManifestReader : StreamReader
 }
 
 public record struct RobustManifestInfo(Uri ManifestUri, Uri DownloadUri, string Hash);
+
 public record struct RobustManifestItem(string Hash, string Path, int Id);

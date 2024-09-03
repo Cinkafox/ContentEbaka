@@ -1,6 +1,6 @@
 ﻿namespace Content.Runner.Data.Auth;
 
-public class LoginInfo 
+public class LoginInfo
 {
     public Guid UserId { get; set; }
     public string Username { get; set; } = default!;

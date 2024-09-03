@@ -56,9 +56,9 @@ public enum ContentCompressionScheme
     Deflate = 1,
 
     /// <summary>
-    /// ZStandard compression. In the future may use SS14 specific dictionary IDs in the frame header.
+    ///     ZStandard compression. In the future may use SS14 specific dictionary IDs in the frame header.
     /// </summary>
-    ZStd = 2,
+    ZStd = 2
 }
 
 public sealed record VersionInfo(
@@ -69,14 +69,14 @@ public sealed record VersionInfo(
 
 public sealed class BuildInfo
 {
-    [JsonInclude] [JsonPropertyName("url")]
-    public string Url = default!;
-
     [JsonInclude] [JsonPropertyName("sha256")]
     public string Sha256 = default!;
 
     [JsonInclude] [JsonPropertyName("sig")]
     public string Signature = default!;
+
+    [JsonInclude] [JsonPropertyName("url")]
+    public string Url = default!;
 }
 
 public class ServerInfo
@@ -106,5 +106,7 @@ public class StatusData
 }
 
 public sealed record ModulesInfo(Dictionary<string, Module> Modules);
+
 public sealed record Module(Dictionary<string, ModuleVersionInfo> Versions);
+
 public sealed record ModuleVersionInfo(Dictionary<string, BuildInfo> Platforms);

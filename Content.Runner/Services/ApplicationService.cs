@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Content.Datum.Data;
 using Content.Datum.Data.FileApis.Interfaces;
 using Content.Datum.Services;
-using Content.Runner.Data.Auth;
 using Content.Runner.UI;
 using Content.UI.Console.UI;
 using Robust.LoaderApi;
@@ -19,11 +18,10 @@ public class ApplicationService(
     RunnerService runnerService,
     AuthWindow authWindow,
     ServerListWindow serverListWindow,
-    FileService fileService, 
+    FileService fileService,
     ContentService contentService)
     : IExecutePoint, IRedialApi
 {
-    
     private readonly IReadWriteFileApi _authFileApi = fileService.CreateFileApi("/auth");
     private ApplicationOption _option = default!;
 
@@ -33,7 +31,7 @@ public class ApplicationService(
         Application.QuitKey = Key.C.WithCtrl;
         Task.Run(RunAsync).Wait();
     }
-    
+
     public void Redial(Uri uri, string text = "")
     {
         _option.Url = uri.ToString();
@@ -47,20 +45,19 @@ public class ApplicationService(
         {
             var successReadAuthDat = await ReadAuthDat();
             debugService.Debug("Reading auth data");
-        
+
             if (!successReadAuthDat)
             {
                 debugService.Debug("Auth is require.");
-            
+
                 do
                 {
                     Application.Init();
                     Application.Run(authWindow);
                     Application.Shutdown();
                     debugService.Debug("Trying to auth...");
-
                 } while (await authService.Auth(authWindow.Login, authWindow.Password));
-            
+
                 debugService.Debug("Success! Going to menu");
                 await SaveAuthDat(authWindow.Login, authWindow.Password);
             }
@@ -68,7 +65,7 @@ public class ApplicationService(
             _option.Login = authService.AuthDatum.Item1;
             _option.Password = authService.AuthDatum.Item2;
         }
-        
+
         if (string.IsNullOrWhiteSpace(_option.Url))
         {
             RunUi();
@@ -92,24 +89,25 @@ public class ApplicationService(
         }
 
         _option.Url = serverListWindow.SelectedUrl;
-        
+
         StartProcess();
     }
 
     private async Task<bool> ReadAuthDat()
     {
-        if (!_authFileApi.TryOpen("auth.dat", out var stream)) 
+        if (!_authFileApi.TryOpen("auth.dat", out var stream))
             return false;
-        
+
         string? login;
         string? password;
-            
+
         using (var sw = new StreamReader(stream))
         {
             login = await sw.ReadLineAsync();
             password = await sw.ReadLineAsync();
-            if(login is null || password is null) return false;
+            if (login is null || password is null) return false;
         }
+
         stream.Close();
 
         return await authService.Auth(login, password);
@@ -129,7 +127,7 @@ public class ApplicationService(
     private async Task RunGame()
     {
         var url = new RobustUrl(_option.Url);
-        
+
         using var cancelTokenSource = new CancellationTokenSource();
         var buildInfo = await contentService.GetBuildInfo(url, cancelTokenSource.Token);
 
@@ -141,14 +139,14 @@ public class ApplicationService(
                 debugService.Debug("Failed to auth with: " + _option.Login + " " + _option.Password);
                 return;
             }
-            
+
             var account = authService.CurrentLogin!;
             Environment.SetEnvironmentVariable("ROBUST_AUTH_TOKEN", account.Token.Token);
             Environment.SetEnvironmentVariable("ROBUST_AUTH_USERID", account.UserId.ToString());
             Environment.SetEnvironmentVariable("ROBUST_AUTH_PUBKEY", buildInfo.BuildInfo.auth.public_key);
             Environment.SetEnvironmentVariable("ROBUST_AUTH_SERVER", "https://auth.spacestation14.com/");
         }
-            
+
         var args = new List<string>
         {
             // Pass username to launched client.
@@ -162,7 +160,7 @@ public class ApplicationService(
         var connectionString = url.ToString();
         if (!string.IsNullOrEmpty(buildInfo.BuildInfo.connect_address))
             connectionString = buildInfo.BuildInfo.connect_address;
-                
+
         // We are using the launcher. Don't show main menu etc..
         // Note: --launcher also implied --connect.
         // For this reason, content bundles do not set --launcher.
@@ -170,13 +168,13 @@ public class ApplicationService(
 
         args.Add("--connect-address");
         args.Add(connectionString);
-                
+
         args.Add("--ss14-address");
         args.Add(url.ToString());
 
-        await runnerService.Run(args.ToArray(),buildInfo, this, cancelTokenSource.Token);
+        await runnerService.Run(args.ToArray(), buildInfo, this, cancelTokenSource.Token);
     }
-    
+
     private void StartProcess()
     {
         var info = new ProcessStartInfo(Environment.ProcessPath!, _option.Args)
@@ -197,11 +195,6 @@ public class ApplicationOption
     public string Login = string.Empty;
     public string Password = string.Empty;
     public string Url = string.Empty;
-    
-    public string[] Args =>
-    [
-        "--login", Login, "--password", Password, "--url", Url
-    ];
 
     public ApplicationOption(string[] args)
     {
@@ -215,11 +208,16 @@ public class ApplicationOption
         root.SetHandler(Handler, LoginOption, PasswordOption, UrlOption);
 
         var commandLineBuilder = new CommandLineBuilder(root);
-            
+
         commandLineBuilder.UseDefaults();
         var parser = commandLineBuilder.Build();
         parser.Invoke(args);
     }
+
+    public string[] Args =>
+    [
+        "--login", Login, "--password", Password, "--url", Url
+    ];
 
     private void Handler(string login, string password, string url)
     {
@@ -228,5 +226,3 @@ public class ApplicationOption
         Url = url;
     }
 }
-
-

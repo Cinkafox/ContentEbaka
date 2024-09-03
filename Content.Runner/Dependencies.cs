@@ -14,6 +14,7 @@ public static class Dependencies
         serviceCollection.AddSingleton<ServerListWindow>();
         serviceCollection.AddSingleton<AuthWindow>();
     }
+
     public static void Initialize(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<AuthService>();

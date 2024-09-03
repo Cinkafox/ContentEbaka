@@ -6,7 +6,7 @@ namespace ContentDownloader.Utils;
 
 public static class RidUtility
 {
-    public static string? FindBestRid(ICollection<string> runtimes, string? currentRid=null)
+    public static string? FindBestRid(ICollection<string> runtimes, string? currentRid = null)
     {
         var catalog = LoadRidCatalog();
 
@@ -35,10 +35,7 @@ public static class RidUtility
 
         while (q.TryDequeue(out var v))
         {
-            if (runtimes.Contains(v))
-            {
-                return v;
-            }
+            if (runtimes.Contains(v)) return v;
 
             foreach (var w in catalog.Runtimes[v].Imports)
             {
@@ -57,7 +54,6 @@ public static class RidUtility
     private static string GuessRid()
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
             return RuntimeInformation.ProcessArchitecture switch
             {
                 Architecture.X86 => "linux-x86",
@@ -66,19 +62,15 @@ public static class RidUtility
                 Architecture.Arm64 => "linux-arm64",
                 _ => "unknown"
             };
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
-        {
             return RuntimeInformation.ProcessArchitecture switch
             {
                 Architecture.X64 => "freebsd-x64",
                 _ => "unknown"
             };
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
             return RuntimeInformation.ProcessArchitecture switch
             {
                 Architecture.X86 => "win-x86",
@@ -87,17 +79,14 @@ public static class RidUtility
                 Architecture.Arm64 => "win-arm64",
                 _ => "unknown"
             };
-        }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
             return RuntimeInformation.ProcessArchitecture switch
             {
                 Architecture.X64 => "osx-x64",
                 Architecture.Arm64 => "osx-arm64",
                 _ => "unknown"
             };
-        }
 
         return "unknown";
     }
@@ -108,7 +97,7 @@ public static class RidUtility
         var ms = new MemoryStream();
         stream.CopyTo(ms);
 
-        return JsonSerializer.Deserialize<RidCatalog>(ms.GetBuffer().AsSpan(0, (int) ms.Length))!;
+        return JsonSerializer.Deserialize<RidCatalog>(ms.GetBuffer().AsSpan(0, (int)ms.Length))!;
     }
 
 #pragma warning disable 649

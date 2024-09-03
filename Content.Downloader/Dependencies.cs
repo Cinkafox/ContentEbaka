@@ -12,6 +12,7 @@ public static class Dependencies
     {
         serviceCollection.AddSingleton<ServerListWindow>();
     }
+
     public static void Initialize(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ILogger, ConsoleLogger>();

@@ -27,5 +27,7 @@ public class DebugService
 
 public enum LoggerCategory
 {
-    Log, Debug, Error
+    Log,
+    Debug,
+    Error
 }

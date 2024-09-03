@@ -5,12 +5,12 @@ namespace Content.Datum.Data.FileApis;
 public class FileApi : IReadWriteFileApi
 {
     public string RootPath;
-    
+
     public FileApi(string rootPath)
     {
         RootPath = rootPath;
     }
-    
+
     public bool TryOpen(string path, out Stream? stream)
     {
         if (File.Exists(Path.Join(RootPath, path)))
@@ -22,16 +22,13 @@ public class FileApi : IReadWriteFileApi
         stream = null;
         return false;
     }
-    
+
     public bool Save(string path, Stream input)
     {
         var currPath = Path.Join(RootPath, path);
-        
+
         var dirInfo = new DirectoryInfo(Path.GetDirectoryName(currPath));
-        if (!dirInfo.Exists)
-        {
-            dirInfo.Create();
-        }
+        if (!dirInfo.Exists) dirInfo.Create();
 
         using var stream = File.OpenWrite(currPath);
         input.CopyTo(stream);

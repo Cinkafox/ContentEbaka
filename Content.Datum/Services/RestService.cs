@@ -2,14 +2,13 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using ContentDownloader.Utils;
 
 namespace Content.Datum.Services;
 
 public class RestService
 {
-    private readonly DebugService _debug;
     private readonly HttpClient _client = new();
+    private readonly DebugService _debug;
 
     private readonly JsonSerializerOptions _serializerOptions = new()
     {

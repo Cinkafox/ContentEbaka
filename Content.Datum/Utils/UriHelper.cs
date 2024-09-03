@@ -17,10 +17,7 @@ public static class UriHelper
     [Pure]
     public static Uri ParseSs14Uri(string address)
     {
-        if (!TryParseSs14Uri(address, out var uri))
-        {
-            throw new FormatException("Not a valid SS14 URI");
-        }
+        if (!TryParseSs14Uri(address, out var uri)) throw new FormatException("Not a valid SS14 URI");
 
         return uri;
     }
@@ -28,20 +25,11 @@ public static class UriHelper
     [Pure]
     public static bool TryParseSs14Uri(string address, [NotNullWhen(true)] out Uri? uri)
     {
-        if (!address.Contains("://"))
-        {
-            address = "ss14://" + address;
-        }
+        if (!address.Contains("://")) address = "ss14://" + address;
 
-        if (!Uri.TryCreate(address, UriKind.Absolute, out uri))
-        {
-            return false;
-        }
+        if (!Uri.TryCreate(address, UriKind.Absolute, out uri)) return false;
 
-        if (uri.Scheme != SchemeSs14 && uri.Scheme != SchemeSs14s)
-        {
-            return false;
-        }
+        if (uri.Scheme != SchemeSs14 && uri.Scheme != SchemeSs14s) return false;
 
         if (string.IsNullOrWhiteSpace(uri.Host))
             return false;
@@ -64,20 +52,14 @@ public static class UriHelper
 
         var builder = new UriBuilder(serverAddress)
         {
-            Scheme = dataScheme,
+            Scheme = dataScheme
         };
 
         // No port specified.
         // Default port for ss14:// is 1212, for ss14s:// it's 443 (HTTPS)
-        if (serverAddress.IsDefaultPort && serverAddress.Scheme == SchemeSs14)
-        {
-            builder.Port = 1212;
-        }
+        if (serverAddress.IsDefaultPort && serverAddress.Scheme == SchemeSs14) builder.Port = 1212;
 
-        if (!builder.Path.EndsWith('/'))
-        {
-            builder.Path += "/";
-        }
+        if (!builder.Path.EndsWith('/')) builder.Path += "/";
 
         return builder.Uri;
     }

@@ -21,7 +21,7 @@ public static class ZStd
         NativeLibrary.SetDllImportResolver(
             typeof(Zstd).Assembly,
             ResolveZstd
-            );
+        );
     }
 
     private static IntPtr ResolveZstd(string name, Assembly assembly, DllImportSearchPath? path)
@@ -45,13 +45,23 @@ public static class ZStd
 
 public sealed unsafe class ZStdCCtx : IDisposable
 {
+    public ZStdCCtx()
+    {
+        Context = ZSTD_createCCtx();
+    }
+
     public ZSTD_CCtx* Context { get; private set; }
 
     private bool Disposed => Context == null;
 
-    public ZStdCCtx()
+    public void Dispose()
     {
-        Context = ZSTD_createCCtx();
+        if (Disposed)
+            return;
+
+        ZSTD_freeCCtx(Context);
+        Context = null;
+        GC.SuppressFinalize(this);
     }
 
     public void SetParameter(ZSTD_cParameter parameter, int value)
@@ -84,16 +94,6 @@ public sealed unsafe class ZStdCCtx : IDisposable
         Dispose();
     }
 
-    public void Dispose()
-    {
-        if (Disposed)
-            return;
-
-        ZSTD_freeCCtx(Context);
-        Context = null;
-        GC.SuppressFinalize(this);
-    }
-
     private void CheckDisposed()
     {
         if (Disposed)
@@ -103,13 +103,23 @@ public sealed unsafe class ZStdCCtx : IDisposable
 
 public sealed unsafe class ZStdDCtx : IDisposable
 {
+    public ZStdDCtx()
+    {
+        Context = ZSTD_createDCtx();
+    }
+
     public ZSTD_DCtx* Context { get; private set; }
 
     private bool Disposed => Context == null;
 
-    public ZStdDCtx()
+    public void Dispose()
     {
-        Context = ZSTD_createDCtx();
+        if (Disposed)
+            return;
+
+        ZSTD_freeDCtx(Context);
+        Context = null;
+        GC.SuppressFinalize(this);
     }
 
     public void SetParameter(ZSTD_dParameter parameter, int value)
@@ -138,23 +148,12 @@ public sealed unsafe class ZStdDCtx : IDisposable
         Dispose();
     }
 
-    public void Dispose()
-    {
-        if (Disposed)
-            return;
-
-        ZSTD_freeDCtx(Context);
-        Context = null;
-        GC.SuppressFinalize(this);
-    }
-
     private void CheckDisposed()
     {
         if (Disposed)
             throw new ObjectDisposedException(nameof(ZStdDCtx));
     }
 }
-
 
 [Serializable]
 public class ZStdException : Exception
@@ -186,9 +185,9 @@ public class ZStdException : Exception
 public sealed class ZStdDecompressStream : Stream
 {
     private readonly Stream _baseStream;
-    private readonly bool _ownStream;
-    private readonly unsafe ZSTD_DCtx* _ctx;
     private readonly byte[] _buffer;
+    private readonly unsafe ZSTD_DCtx* _ctx;
+    private readonly bool _ownStream;
     private int _bufferPos;
     private int _bufferSize;
     private bool _disposed;
@@ -199,6 +198,17 @@ public sealed class ZStdDecompressStream : Stream
         _ownStream = ownStream;
         _ctx = ZSTD_createDCtx();
         _buffer = ArrayPool<byte>.Shared.Rent((int)ZSTD_DStreamInSize());
+    }
+
+    public override bool CanRead => true;
+    public override bool CanSeek => false;
+    public override bool CanWrite => false;
+    public override long Length => throw new NotSupportedException();
+
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
     }
 
     protected override unsafe void Dispose(bool disposing)
@@ -284,7 +294,6 @@ public sealed class ZStdDecompressStream : Stream
             var ret = DecompressChunk(this, buffer.Span);
             if (ret > 0)
                 return (int)ret;
-
         } while (true);
 
         static unsafe nuint DecompressChunk(ZStdDecompressStream stream, Span<byte> buffer)
@@ -326,17 +335,6 @@ public sealed class ZStdDecompressStream : Stream
         throw new NotSupportedException();
     }
 
-    public override bool CanRead => true;
-    public override bool CanSeek => false;
-    public override bool CanWrite => false;
-    public override long Length => throw new NotSupportedException();
-
-    public override long Position
-    {
-        get => throw new NotSupportedException();
-        set => throw new NotSupportedException();
-    }
-
     private void ThrowIfDisposed()
     {
         if (_disposed)
@@ -347,9 +345,9 @@ public sealed class ZStdDecompressStream : Stream
 public sealed class ZStdCompressStream : Stream
 {
     private readonly Stream _baseStream;
-    private readonly bool _ownStream;
-    private readonly unsafe ZSTD_CCtx* _ctx;
     private readonly byte[] _buffer;
+    private readonly unsafe ZSTD_CCtx* _ctx;
+    private readonly bool _ownStream;
     private int _bufferPos;
     private bool _disposed;
 
@@ -359,6 +357,17 @@ public sealed class ZStdCompressStream : Stream
         _baseStream = baseStream;
         _ownStream = ownStream;
         _buffer = ArrayPool<byte>.Shared.Rent((int)ZSTD_CStreamOutSize());
+    }
+
+    public override bool CanRead => false;
+    public override bool CanSeek => false;
+    public override bool CanWrite => true;
+    public override long Length => throw new NotSupportedException();
+
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
     }
 
     public override void Flush()
@@ -452,17 +461,6 @@ public sealed class ZStdCompressStream : Stream
                 outBuf.pos = 0;
             }
         }
-    }
-
-    public override bool CanRead => false;
-    public override bool CanSeek => false;
-    public override bool CanWrite => true;
-    public override long Length => throw new NotSupportedException();
-
-    public override long Position
-    {
-        get => throw new NotSupportedException();
-        set => throw new NotSupportedException();
     }
 
     protected override unsafe void Dispose(bool disposing)

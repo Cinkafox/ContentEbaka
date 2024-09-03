@@ -16,7 +16,7 @@ public partial class ContentService
         return _fileService.ContentFileApi.Has(item.Hash);
     }
 
-    public async Task<List<RobustManifestItem>> EnsureItems(ManifestReader manifestReader,Uri downloadUri,
+    public async Task<List<RobustManifestItem>> EnsureItems(ManifestReader manifestReader, Uri downloadUri,
         CancellationToken cancellationToken)
     {
         List<RobustManifestItem> allItems = [];
@@ -29,24 +29,24 @@ public partial class ContentService
                 _debugService.Log("ensuring is cancelled!");
                 return [];
             }
-            
+
             if (!CheckManifestExist(item.Value))
                 items.Add(item.Value);
             allItems.Add(item.Value);
         }
-        
+
         _debugService.Log("Download Count:" + items.Count);
 
-        await Download(downloadUri,items,cancellationToken);
+        await Download(downloadUri, items, cancellationToken);
 
         _fileService.ManifestItems = allItems;
-        
+
         return allItems;
     }
 
-    public async Task<List<RobustManifestItem>> EnsureItems(RobustManifestInfo info,CancellationToken cancellationToken)
+    public async Task<List<RobustManifestItem>> EnsureItems(RobustManifestInfo info,
+        CancellationToken cancellationToken)
     {
-        
         _debugService.Log("Getting manifest: " + info.Hash);
 
         if (_fileService.ManifestFileApi.TryOpen(info.Hash, out var stream))
@@ -54,10 +54,10 @@ public partial class ContentService
             _debugService.Log("Loading manifest from: " + info.Hash);
             return await EnsureItems(new ManifestReader(stream), info.DownloadUri, cancellationToken);
         }
-        
+
         _debugService.Log("Fetching manifest from: " + info.ManifestUri);
 
-        var response = await _http.GetAsync(info.ManifestUri,cancellationToken);
+        var response = await _http.GetAsync(info.ManifestUri, cancellationToken);
         if (!response.IsSuccessStatusCode) throw new Exception();
 
         await using var streamContent = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -67,12 +67,11 @@ public partial class ContentService
         return await EnsureItems(manifestReader, info.DownloadUri, cancellationToken);
     }
 
-    public async Task Unpack(RobustManifestInfo info, IWriteFileApi otherApi,CancellationToken cancellationToken)
+    public async Task Unpack(RobustManifestInfo info, IWriteFileApi otherApi, CancellationToken cancellationToken)
     {
         _debugService.Log("Unpack manifest files");
-        var items = await EnsureItems(info,cancellationToken);
+        var items = await EnsureItems(info, cancellationToken);
         foreach (var item in items)
-        {
             if (_fileService.ContentFileApi.TryOpen(item.Hash, out var stream))
             {
                 _debugService.Log($"Unpack {item.Hash} to: {item.Path}");
@@ -83,19 +82,18 @@ public partial class ContentService
             {
                 _debugService.Error("OH FUCK!! " + item.Path);
             }
-        }
     }
-    
-    public async Task Download(Uri contentCdn,List<RobustManifestItem> toDownload,CancellationToken cancellationToken)
+
+    public async Task Download(Uri contentCdn, List<RobustManifestItem> toDownload, CancellationToken cancellationToken)
     {
-        if(toDownload.Count == 0 || cancellationToken.IsCancellationRequested)
+        if (toDownload.Count == 0 || cancellationToken.IsCancellationRequested)
         {
             _debugService.Log("Nothing to download! Fuck this!");
             return;
         }
-        
+
         _debugService.Log("Downloading from: " + contentCdn);
-        
+
         var requestBody = new byte[toDownload.Count * 4];
         var reqI = 0;
         foreach (var item in toDownload)
@@ -103,7 +101,7 @@ public partial class ContentService
             BinaryPrimitives.WriteInt32LittleEndian(requestBody.AsSpan(reqI, 4), item.Id);
             reqI += 4;
         }
-        
+
         var request = new HttpRequestMessage(HttpMethod.Post, contentCdn);
         request.Headers.Add(
             "X-Robust-Download-Protocol",
@@ -113,16 +111,16 @@ public partial class ContentService
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
         request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("zstd"));
-        var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,cancellationToken);
+        var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         if (cancellationToken.IsCancellationRequested)
         {
             _debugService.Log("Downloading is cancelled!");
             return;
         }
-        
+
         response.EnsureSuccessStatusCode();
-        
+
         var stream = await response.Content.ReadAsStreamAsync();
         var bandwidthStream = new BandwidthStream(stream);
         stream = bandwidthStream;
@@ -132,7 +130,7 @@ public partial class ContentService
         await using var streamDispose = stream;
 
         // Read flags header
-        var streamHeader = await stream.ReadExactAsync(4,null);
+        var streamHeader = await stream.ReadExactAsync(4, null);
         var streamFlags = (DownloadStreamHeaderFlags)BinaryPrimitives.ReadInt32LittleEndian(streamHeader);
         var preCompressed = (streamFlags & DownloadStreamHeaderFlags.PreCompressed) != 0;
 
@@ -231,7 +229,7 @@ public partial class ContentService
 
                 using var fileStream = new MemoryStream(data.ToArray());
                 _fileService.ContentFileApi.Save(item.Hash, fileStream);
-                
+
                 _debugService.Log("file saved:" + item.Path);
                 i += 1;
             }

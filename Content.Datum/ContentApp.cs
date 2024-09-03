@@ -7,6 +7,7 @@ public class ContentApp
 {
     public IServiceCollection ServiceCollection = new ServiceCollection();
     public IServiceProvider ServiceProvider;
+
     public ContentApp()
     {
         Dependency.Initialize(ServiceCollection);

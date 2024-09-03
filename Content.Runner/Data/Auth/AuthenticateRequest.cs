@@ -4,7 +4,5 @@ public sealed record AuthenticateRequest(string? Username, Guid? UserId, string 
 {
     public AuthenticateRequest(string username, string password) : this(username, null, password)
     {
-
     }
-    
 }
