@@ -7,15 +7,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Content.Runner;
 
-public static class Dependencies
+public sealed class UIDependencies : IDependencyCollection
 {
-    public static void InitializeUI(IServiceCollection serviceCollection)
+    public void Register(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ServerListWindow>();
         serviceCollection.AddSingleton<AuthWindow>();
     }
+}
 
-    public static void Initialize(IServiceCollection serviceCollection)
+public sealed class RunnerDependencies : IDependencyCollection
+{
+    public void Register(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<AuthService>();
         serviceCollection.AddSingleton<ILogger, ConsoleLogger>();

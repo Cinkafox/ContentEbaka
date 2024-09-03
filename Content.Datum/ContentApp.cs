@@ -5,21 +5,36 @@ namespace Content.Datum;
 
 public class ContentApp
 {
-    public IServiceCollection ServiceCollection = new ServiceCollection();
-    public IServiceProvider ServiceProvider;
+    private readonly IServiceCollection _serviceCollection = new ServiceCollection();
+    private IServiceProvider _serviceProvider;
 
     public ContentApp()
     {
-        Dependency.Initialize(ServiceCollection);
+        RegisterDependencies<BaseDependencies>();
     }
 
-    public void Build()
+    public ContentApp Build()
     {
-        ServiceProvider = ServiceCollection.BuildServiceProvider();
+        _serviceProvider = _serviceCollection.BuildServiceProvider();
+        return this;
     }
 
-    public void Run(string[] args)
+    public ContentApp RegisterDependencies(IDependencyCollection dependencyCollection)
     {
-        ServiceProvider.GetService<IExecutePoint>()!.Run(args);
+        dependencyCollection.Register(_serviceCollection);
+        return this;
+    }
+
+    public ContentApp RegisterDependencies<T>() where T : IDependencyCollection, new()
+    {
+        var t = new T();
+        RegisterDependencies(t);
+        return this;
+    }
+
+    public ContentApp Run(string[] args)
+    {
+        _serviceProvider.GetService<IExecutePoint>()?.Run(args);
+        return this;
     }
 }

@@ -6,14 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Content.Downloader;
 
-public static class Dependencies
+public sealed class UIDependencies : IDependencyCollection
 {
-    public static void InitializeUI(IServiceCollection serviceCollection)
+    public void Register(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ServerListWindow>();
     }
+}
 
-    public static void Initialize(IServiceCollection serviceCollection)
+public sealed class DownloadDependencies : IDependencyCollection
+{
+    public void Register(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ILogger, ConsoleLogger>();
         serviceCollection.AddSingleton<IExecutePoint, ApplicationService>();

@@ -1,11 +1,12 @@
-﻿using Content.Datum.Services;
+﻿using Content.Datum.Data;
+using Content.Datum.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Content.Datum;
 
-public static class Dependency
+public sealed class BaseDependencies : IDependencyCollection
 {
-    public static void Initialize(IServiceCollection serviceCollection)
+    public void Register(IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<ContentService>();
         serviceCollection.AddSingleton<DebugService>();
