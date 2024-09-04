@@ -13,7 +13,9 @@ public sealed class ServerListDataSource : IListDataSource
     private List<string>? _filteredAddresses;
     private readonly Attribute _selectedAttribute = new(Color.Black, Color.White);
 
-    private readonly Dictionary<string, ServerInfo> ServerList = new();
+    private readonly Dictionary<string, ServerInfo> _serverList = new();
+
+    private bool _dirty = true;
 
     public List<string> FilteredAddresses
     {
@@ -44,7 +46,7 @@ public sealed class ServerListDataSource : IListDataSource
         if (selected) driver.SetAttribute(_selectedAttribute);
 
         var ip = FilteredAddresses[item];
-        var serverInfo = ServerList[ip];
+        var serverInfo = _serverList[ip];
 
         var str =
             $"{Virovn(item.ToString(), Length.ToString().Length)}| {Virovn(serverInfo.statusData.name, 70)} {Virovn(serverInfo.statusData.players.ToString(), 4)}/{Virovn(serverInfo.statusData.soft_max_players.ToString(), 4)}";
@@ -60,6 +62,22 @@ public sealed class ServerListDataSource : IListDataSource
 
     public IList ToList()
     {
+        if (_dirty)
+        {
+            FilteredAddresses.Sort((a, b) =>
+            {
+                var aa = _serverList[a];
+                var bb = _serverList[b];
+
+                var counta = aa.statusData.players;
+                var countb = bb.statusData.players;
+
+                return counta != countb 
+                    ? countb.CompareTo(counta) 
+                    : String.Compare(aa.statusData.name, bb.statusData.name, StringComparison.Ordinal);
+            });
+            _dirty = false;
+        }
         return FilteredAddresses;
     }
 
@@ -70,10 +88,11 @@ public sealed class ServerListDataSource : IListDataSource
 
     public void Add(ServerInfo serverInfo)
     {
-        if (!ServerList.TryGetValue(serverInfo.address, out _))
+        if (!_serverList.TryGetValue(serverInfo.address, out _))
             _serverAddresses.Add(serverInfo.address);
-
-        ServerList[serverInfo.address] = serverInfo;
+        
+        _serverList[serverInfo.address] = serverInfo;
+        _dirty = true;
     }
 
     public void Append(IEnumerable<ServerInfo> serverInfos)
@@ -83,7 +102,7 @@ public sealed class ServerListDataSource : IListDataSource
 
     public void Clear()
     {
-        ServerList.Clear();
+        _serverList.Clear();
         _serverAddresses.Clear();
         _filteredAddresses = null;
         _currentFilter = null;
@@ -101,11 +120,12 @@ public sealed class ServerListDataSource : IListDataSource
             _currentFilter = null;
             _filteredAddresses = null;
         }
+        _dirty = true;
     }
 
     private bool Filter(string address)
     {
-        var info = ServerList[address];
+        var info = _serverList[address];
         if (info.address.Contains(_currentFilter!)) return true;
         if (info.statusData.name.Contains(_currentFilter!)) return true;
         return false;

@@ -8,18 +8,16 @@ namespace Content.UI.Console.UI;
 public sealed class ServerListWindow : Window
 {
     private readonly RestService _restService;
-
     private readonly ListView _serverListView;
-
-    public List<Uri> HubUris = new()
+    private readonly ServerListDataSource _serverListDataSource = new();
+    private readonly List<Uri> _hubUris = new()
     {
         new("https://cdn.spacestationmultiverse.com/hub/api/servers"),
         new("https://hub.spacestation14.com/api/servers")
     };
 
-    public string? SelectedUrl;
-
-    public ServerListDataSource ServerListDataSource = new();
+    public string? SelectedUrl { get; private set; }
+    public bool IsCurrentUpdateHub { get; private set; }
 
     public ServerListWindow(RestService restService)
     {
@@ -50,7 +48,7 @@ public sealed class ServerListWindow : Window
         };
 
         exitButton.MouseClick += (_, _) => RequestStop();
-        updateButton.MouseClick += (_, _) => { };
+        updateButton.MouseClick += (_, _) => UpdateHubs();
 
         filterInput.TextChanging += FilterInputOnTextChanging;
 
@@ -62,9 +60,15 @@ public sealed class ServerListWindow : Window
         Add(updateButton);
     }
 
+    private async void UpdateHubs()
+    {
+        if(IsCurrentUpdateHub) return;
+        await LoadData();
+    }
+
     private void FilterInputOnTextChanging(object? sender, CancelEventArgs<string> e)
     {
-        ServerListDataSource.ApplyFilter(e.NewValue);
+        _serverListDataSource.ApplyFilter(e.NewValue);
     }
 
     private void ServerListViewOnOpenSelectedItem(object? sender, ListViewItemEventArgs e)
@@ -76,25 +80,27 @@ public sealed class ServerListWindow : Window
 
     public async Task LoadData()
     {
-        ServerListDataSource.Clear();
+        IsCurrentUpdateHub = true;
+        _serverListDataSource.Clear();
         var a = new ObservableCollection<string>
         {
             "Loading... Please wait"
         };
 
         await _serverListView.SetSourceAsync(a);
-        foreach (var hubUrl in HubUris)
+        foreach (var hubUrl in _hubUris)
         {
             a.Add("Loading:" + hubUrl);
             await LoadData(hubUrl);
         }
 
-        _serverListView.Source = ServerListDataSource;
+        _serverListView.Source = _serverListDataSource;
+        IsCurrentUpdateHub = false;
     }
 
     public async Task LoadData(Uri hubUri)
     {
         var servers = await _restService.GetAsyncDefault<List<ServerInfo>>(hubUri, [], CancellationToken.None);
-        ServerListDataSource.Append(servers);
+        _serverListDataSource.Append(servers);
     }
 }
