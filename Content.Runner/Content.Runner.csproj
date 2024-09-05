@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Content.Datum\Content.Datum.csproj"/>
+        <ProjectReference Include="..\Content.Script\Content.Script.csproj" />
         <ProjectReference Include="..\Content.UI\Content.UI.csproj"/>
     </ItemGroup>
 

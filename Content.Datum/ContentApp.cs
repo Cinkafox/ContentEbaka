@@ -6,6 +6,8 @@ namespace Content.Datum;
 
 public class ContentApp
 {
+    public static ContentApp Instance;
+    
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
     private IServiceProvider _serviceProvider;
 
@@ -17,6 +19,7 @@ public class ContentApp
     public ContentApp Build()
     {
         _serviceProvider = _serviceCollection.BuildServiceProvider();
+        Instance = this;
         return this;
     }
 
@@ -37,12 +40,18 @@ public class ContentApp
     {
         try
         {
-            _serviceProvider.GetService<IExecutePoint>()?.Run(args);
+            GetService<IExecutePoint>().Run(args);
         }
         catch (Exception e)
-        {
-            _serviceProvider.GetService<DebugService>()!.Error(e.Message);
+        { 
+            GetService<DebugService>().StackTrace(e);
+            Console.ReadKey();
         }
         return this;
+    }
+
+    public T GetService<T>()
+    {
+        return _serviceProvider.GetService<T>()!;
     }
 }

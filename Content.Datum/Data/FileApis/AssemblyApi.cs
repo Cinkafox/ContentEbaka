@@ -6,7 +6,7 @@ public class AssemblyApi : IFileApi
 {
     private readonly IFileApi _root;
 
-    public AssemblyApi(IFileApi root)
+    internal AssemblyApi(IFileApi root)
     {
         _root = root;
     }

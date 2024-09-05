@@ -71,7 +71,7 @@ public class ApplicationService(
             RunUi();
             return;
         }
-
+        
         await RunGame();
     }
 

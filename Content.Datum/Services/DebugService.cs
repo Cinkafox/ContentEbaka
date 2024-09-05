@@ -35,6 +35,13 @@ public class DebugService : IDisposable
         Log(LoggerCategory.Error, message);
     }
 
+    public void StackTrace(Exception e)
+    {
+        Log(LoggerCategory.Error,e.Message);
+        Log(LoggerCategory.Error,e.StackTrace + "...");
+        if(e.InnerException is not null) StackTrace(e.InnerException);
+    }
+
     public void Log(string message)
     {
         Log(LoggerCategory.Log, message);
@@ -63,5 +70,6 @@ public enum LoggerCategory
 {
     Log,
     Debug,
-    Error
+    Error,
+    Fatal
 }

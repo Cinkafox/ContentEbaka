@@ -13,11 +13,12 @@ public class FileService
         Environment.SpecialFolder.ApplicationData), "./Datum/");
 
     private readonly DebugService _debugService;
+    
     public readonly IReadWriteFileApi ContentFileApi;
-
     public readonly IReadWriteFileApi EngineFileApi;
     public readonly IReadWriteFileApi ManifestFileApi;
-    private HashApi? _hashApi;
+    
+    private IFileApi? _hashApi;
 
     public FileService(DebugService debugService)
     {
@@ -29,10 +30,10 @@ public class FileService
 
     public List<RobustManifestItem> ManifestItems
     {
-        set => _hashApi = new HashApi(value, ContentFileApi);
+        set => HashApi = new HashApi(value, ContentFileApi);
     }
 
-    public HashApi HashApi
+    public IFileApi HashApi
     {
         get
         {

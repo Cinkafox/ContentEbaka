@@ -9,7 +9,7 @@ namespace Content.Datum.Services;
 
 public class AssemblyService
 {
-    private readonly List<Assembly> _assemblies = new();
+    private readonly Dictionary<string,Assembly> _assemblies = new();
     private readonly DebugService _debugService;
 
     public AssemblyService(DebugService debugService)
@@ -17,7 +17,7 @@ public class AssemblyService
         _debugService = debugService;
     }
 
-    public IReadOnlyList<Assembly> Assemblies => _assemblies;
+    public IReadOnlyDictionary<string,Assembly> Assemblies => _assemblies;
 
     public AssemblyApi Mount(IFileApi fileApi)
     {
@@ -50,8 +50,16 @@ public class AssemblyService
         return true;
     }
 
+    public bool TryGetCachedAssembly(string name, [NotNullWhen(true)] out Assembly? assembly)
+    {
+        return _assemblies.TryGetValue(name, out assembly);
+    }
+
     public bool TryOpenAssembly(string name, AssemblyApi assemblyApi, [NotNullWhen(true)] out Assembly? assembly)
     {
+        if (_assemblies.TryGetValue(name, out assembly)) 
+            return true;
+        
         if (!TryOpenAssemblyStream(name, assemblyApi, out var asm, out var pdb))
         {
             assembly = null;
@@ -60,9 +68,11 @@ public class AssemblyService
 
         assembly = AssemblyLoadContext.Default.LoadFromStream(asm, pdb);
         _debugService.Log("LOADED ASSEMBLY " + name);
-
-
-        if (!_assemblies.Contains(assembly)) _assemblies.Add(assembly);
+        _assemblies.Add(name, assembly);
+        
+        var realName = assembly.GetName().Name;
+        if(realName is not null && !realName.Equals(name))
+            _assemblies.Add(realName, assembly);
 
         asm.Dispose();
         pdb?.Dispose();
